@@ -1,4 +1,4 @@
-package chat
+package db
 
 import (
 	"github.com/blevesearch/bleve"
@@ -24,10 +24,29 @@ func buildMapping() *mapping.IndexMappingImpl {
 }
 
 func GetIndex() (bleve.Index, error) {
+	index, err := bleve.Open("chat_messages.bleve")
+	if err != nil {
+		return nil, err
+	}
+	if index != nil {
+		return index, nil
+	}
 	indexMapping := buildMapping()
-	index, err := bleve.New("chat_messages.bleve", indexMapping)
+	index, err = bleve.New("chat_messages.bleve", indexMapping)
 	if err != nil {
 		return nil, err
 	}
 	return index, nil
+}
+
+func DeleteMessage(id string) error {
+	idx, err := GetIndex()
+	if err != nil {
+		return err
+	}
+	err = idx.Delete(id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
