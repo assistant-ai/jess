@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/b0noi/go-utils/gcp"
+	"github.com/b0noi/go-utils/v2/gcp"
 )
 
 func MessageGptInDefaultConversation(message string) (string, error) {

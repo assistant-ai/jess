@@ -27,5 +27,6 @@ func testDB() {
 }
 
 func main() {
-	testDB()
+	// testDB()
+	chat.StartChat()
 }

@@ -1,8 +1,14 @@
 package db
 
 import (
+	"errors"
+	"fmt"
+	"path/filepath"
+
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/mapping"
+
+	"github.com/b0noi/go-utils/v2/fs"
 )
 
 func buildMapping() *mapping.IndexMappingImpl {
@@ -24,15 +30,24 @@ func buildMapping() *mapping.IndexMappingImpl {
 }
 
 func GetIndex() (bleve.Index, error) {
-	index, err := bleve.Open("chat_messages.bleve")
+	appFolder, err := fs.MaybeCreateProgramFolder("assistent")
+	indexPath := filepath.Join(appFolder, "chat_messages.bleve")
+	pathExists, err := fs.PathExists(indexPath)
 	if err != nil {
 		return nil, err
 	}
-	if index != nil {
-		return index, nil
+	if pathExists {
+		index, err := bleve.Open(indexPath)
+		if err != nil {
+			return nil, err
+		} else if index != nil {
+			return index, nil
+		} else {
+			return nil, errors.New("path for DB exist but I can't open it")
+		}
 	}
 	indexMapping := buildMapping()
-	index, err = bleve.New("chat_messages.bleve", indexMapping)
+	index, err := bleve.New(indexPath, indexMapping)
 	if err != nil {
 		return nil, err
 	}
@@ -44,6 +59,7 @@ func DeleteMessage(id string) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("here")
 	err = idx.Delete(id)
 	if err != nil {
 		return err
