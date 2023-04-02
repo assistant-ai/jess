@@ -5,6 +5,7 @@ import (
 
 	"github.com/assistent-ai/client/chat"
 	"github.com/assistent-ai/client/db"
+	"github.com/assistent-ai/client/model"
 )
 
 func testDB() {
@@ -13,7 +14,7 @@ func testDB() {
 	if err != nil {
 		panic(err)
 	}
-	message := &chat.Message{
+	message := &model.Message{
 		ID:        "test1",
 		DialogId:  "default",
 		Timestamp: time.Now(),

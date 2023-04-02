@@ -4,13 +4,16 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/assistent-ai/client/gpt"
+	"github.com/assistent-ai/client/model"
 )
 
 func StartChat() {
 	// Create a new scanner to read messages from the user
 	scanner := bufio.NewScanner(os.Stdin)
+	messages := make([]model.Message, 0)
 
 	// Loop forever, reading messages from the user and sending them to the GPT API
 	for {
@@ -23,14 +26,26 @@ func StartChat() {
 			break
 		}
 
-		// Send the user's message to the GPT API and print the response
-		response, err := gpt.MessageGptInDefaultConversation(scanner.Text())
+		newMessage := model.Message{
+			ID:        "", // You can assign a new ID here
+			DialogId:  "", // You can assign a new DialogId here
+			Timestamp: time.Now(),
+			Role:      "user",
+			Content:   scanner.Text(),
+		}
+		messages = append(messages, newMessage)
+		messages, err := gpt.Message(messages)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
 			continue
 		}
+		lastMessage := messages[len(messages)-1]
 
-		fmt.Printf("Bot: %s\n", response)
+		// Format the timestamp
+		formattedTimestamp := lastMessage.Timestamp.Format("2006-01-02 15:04:05")
+
+		// Print the last message
+		fmt.Printf("[%s] %s: %s\n", formattedTimestamp, lastMessage.Role, lastMessage.Content)
 	}
 
 	// If we've reached the end of input, print a goodbye message
