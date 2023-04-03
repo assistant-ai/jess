@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"time"
 
+	"github.com/assistent-ai/client/model"
 	"github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/mapping"
 
@@ -27,6 +29,40 @@ func buildMapping() *mapping.IndexMappingImpl {
 	mapping.AddDocumentMapping("chatmessage", docMapping)
 
 	return mapping
+}
+
+func GetMessagesByDialogId(dialogId string, index bleve.Index) ([]model.Message, error) {
+	query := bleve.NewTermQuery(dialogId)
+	query.SetField("DialogId")
+
+	searchRequest := bleve.NewSearchRequest(query)
+	searchRequest.Size = 1000
+
+	// Execute the search
+	searchResult, err := index.Search(searchRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a slice to store the messages
+	messages := make([]model.Message, 0, len(searchResult.Hits))
+
+	// Iterate through the search results and retrieve the messages
+	for _, hit := range searchResult.Hits {
+
+		// Create a Message struct from the document fields
+		msg := model.Message{
+			ID:        hit.ID,
+			DialogId:  hit.Fields["DialogId"].(string),
+			Timestamp: hit.Fields["Timestamp"].(time.Time),
+			Role:      hit.Fields["Role"].(string),
+			Content:   hit.Fields["Content"].(string),
+		}
+
+		// Append the message to the messages slice
+		messages = append(messages, msg)
+	}
+	return messages, nil
 }
 
 func GetIndex() (bleve.Index, error) {

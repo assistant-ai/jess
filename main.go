@@ -29,5 +29,5 @@ func testDB() {
 
 func main() {
 	// testDB()
-	chat.StartChat()
+	chat.StartChat(model.DefaultDialogId)
 }
