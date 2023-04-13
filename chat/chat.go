@@ -13,7 +13,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func StartChat(dialogId string) error {
+func ShowMessages(messages []model.Message) {
+	for _, message := range messages {
+		formattedTimestamp := message.Timestamp.Format(model.TimestampFormattingTemplate)
+		fmt.Printf("[%s] %s: %s\n", formattedTimestamp, message.Role, message.Content)
+	}
+}
+
+func StartChat(dialogId string, ctx model.AppContext) error {
 	if dialogId == "" {
 		dialogId = model.DefaultDialogId
 	}
@@ -24,10 +31,7 @@ func StartChat(dialogId string) error {
 	if err != nil {
 		return err
 	}
-	for _, message := range messages {
-		formattedTimestamp := message.Timestamp.Format(model.TimestampFormattingTemplate)
-		fmt.Printf("[%s] %s: %s\n", formattedTimestamp, message.Role, message.Content)
-	}
+	ShowMessages(messages)
 
 	for {
 		// Print a prompt to the user
@@ -49,11 +53,12 @@ func StartChat(dialogId string) error {
 			Content:   scanner.Text(),
 		}
 		messages = append(messages, newMessage)
-		over, err := gpt.IsDialogOver(messages)
+		over, err := gpt.IsDialogOver(messages, ctx)
 		if err != nil && over {
 			break
 		}
-		messages, err := gpt.Message(messages, dialogId)
+		messages := gpt.TrimMessages(messages, 10000)
+		messages, err = gpt.Message(messages, dialogId, ctx)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
 			continue

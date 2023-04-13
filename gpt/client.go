@@ -10,16 +10,10 @@ import (
 	"time"
 
 	"github.com/assistent-ai/client/model"
-	"github.com/b0noi/go-utils/v2/gcp"
 	"github.com/google/uuid"
 )
 
-func IsDialogOver(messages []model.Message) (bool, error) {
-	apiKey, err := gcp.AccessSecretVersion("projects/16255416068/secrets/gpt3-secret/versions/1")
-	if err != nil {
-		return false, err
-	}
-
+func IsDialogOver(messages []model.Message, ctx model.AppContext) (bool, error) {
 	url := "https://api.openai.com/v1/chat/completions"
 
 	// Create a new chat.Message with the GPT-4 response
@@ -43,7 +37,7 @@ func IsDialogOver(messages []model.Message) (bool, error) {
 		return false, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ctx.OpenAiKey))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -66,16 +60,10 @@ func IsDialogOver(messages []model.Message) (bool, error) {
 	return result, nil
 }
 
-func Message(messages []model.Message, dialogId string) ([]model.Message, error) {
-	apiKey, err := gcp.AccessSecretVersion("projects/16255416068/secrets/gpt3-secret/versions/1")
-	if err != nil {
-		return nil, err
-	}
-
+func Message(messages []model.Message, dialogId string, ctx model.AppContext) ([]model.Message, error) {
 	url := "https://api.openai.com/v1/chat/completions"
 
 	requestBody, err := prepareGPT4RequestBody(messages)
-	fmt.Println(string(requestBody))
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +73,7 @@ func Message(messages []model.Message, dialogId string) ([]model.Message, error)
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ctx.OpenAiKey))
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
