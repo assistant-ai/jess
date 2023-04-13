@@ -3,6 +3,7 @@ package gpt
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -51,10 +52,12 @@ func IsDialogOver(messages []model.Message) (bool, error) {
 		return false, err
 	}
 	defer resp.Body.Close()
-	// var response map[string]interface{}
 	var response GptChatCompletionMessage
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return false, err
+	}
+	if len(response.Choices) == 0 {
+		return false, errors.New("Error response from GPT")
 	}
 	result, err := strconv.ParseBool(response.Choices[0].Message.Content)
 	if err != nil {
@@ -72,6 +75,7 @@ func Message(messages []model.Message, dialogId string) ([]model.Message, error)
 	url := "https://api.openai.com/v1/chat/completions"
 
 	requestBody, err := prepareGPT4RequestBody(messages)
+	fmt.Println(string(requestBody))
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +94,6 @@ func Message(messages []model.Message, dialogId string) ([]model.Message, error)
 		return nil, err
 	}
 	defer resp.Body.Close()
-	// var response map[string]interface{}
 	var response GptChatCompletionMessage
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err

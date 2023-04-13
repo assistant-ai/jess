@@ -1,104 +1,100 @@
 package db
 
 import (
-	"errors"
-	"fmt"
+	"database/sql"
+	"log"
 	"path/filepath"
-	"time"
 
 	"github.com/assistent-ai/client/model"
-	"github.com/blevesearch/bleve"
-	"github.com/blevesearch/bleve/mapping"
+	"github.com/google/uuid"
 
 	"github.com/b0noi/go-utils/v2/fs"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-func buildMapping() *mapping.IndexMappingImpl {
-	// create a new index mapping
-	mapping := bleve.NewIndexMapping()
+var db *sql.DB
 
-	// create a new document mapping for ChatMessage
-	docMapping := bleve.NewDocumentMapping()
+func init() {
+	var err error
+	folderPath, err := fs.MaybeCreateProgramFolder("assistent.ai")
+	if err != nil {
+		log.Fatal(err)
+	}
+	dbFilePath := filepath.Join(folderPath, "messages.db")
+	db, err = sql.Open("sqlite3", dbFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	docMapping.AddFieldMappingsAt("id", bleve.NewTextFieldMapping())
-	docMapping.AddFieldMappingsAt("timestamp", bleve.NewDateTimeFieldMapping())
-	docMapping.AddFieldMappingsAt("sender", bleve.NewTextFieldMapping())
-	docMapping.AddFieldMappingsAt("content", bleve.NewTextFieldMapping())
+	createTable := `CREATE TABLE IF NOT EXISTS messages (
+		id TEXT PRIMARY KEY,
+		dialog_id TEXT,
+		timestamp DATETIME,
+		role TEXT,
+		content TEXT
+	);`
 
-	// add the document mapping to the index mapping
-	mapping.AddDocumentMapping("chatmessage", docMapping)
-
-	return mapping
+	_, err = db.Exec(createTable)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func GetMessagesByDialogId(dialogId string, index bleve.Index) ([]model.Message, error) {
-	query := bleve.NewTermQuery(dialogId)
-	query.SetField("DialogId")
+func StoreMessage(m model.Message) (string, error) {
+	id := uuid.New().String()
+	stmt, err := db.Prepare("INSERT INTO messages(id, dialog_id, timestamp, role, content) VALUES(?, ?, ?, ?, ?)")
+	if err != nil {
+		return "", err
+	}
 
-	searchRequest := bleve.NewSearchRequest(query)
-	searchRequest.Size = 1000
+	_, err = stmt.Exec(id, m.DialogId, m.Timestamp, m.Role, m.Content)
+	if err != nil {
+		return "", err
+	}
 
-	// Execute the search
-	searchResult, err := index.Search(searchRequest)
+	return id, nil
+}
+
+func GetMessageByID(id string) (model.Message, error) {
+	var m model.Message
+	err := db.QueryRow("SELECT id, dialog_id, timestamp, role, content FROM messages WHERE id=?", id).Scan(&m.ID, &m.DialogId, &m.Timestamp, &m.Role, &m.Content)
+	if err != nil {
+		return model.Message{}, err
+	}
+
+	return m, nil
+}
+
+func DeleteMessageByID(id string) error {
+	stmt, err := db.Prepare("DELETE FROM messages WHERE id=?")
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetMessagesByDialogID(dialogID string) ([]model.Message, error) {
+	rows, err := db.Query("SELECT id, dialog_id, timestamp, role, content FROM messages WHERE dialog_id=? ORDER BY timestamp ASC", dialogID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
-	// Create a slice to store the messages
-	messages := make([]model.Message, 0, len(searchResult.Hits))
-
-	// Iterate through the search results and retrieve the messages
-	for _, hit := range searchResult.Hits {
-
-		// Create a Message struct from the document fields
-		msg := model.Message{
-			ID:        hit.ID,
-			DialogId:  hit.Fields["DialogId"].(string),
-			Timestamp: hit.Fields["Timestamp"].(time.Time),
-			Role:      hit.Fields["Role"].(string),
-			Content:   hit.Fields["Content"].(string),
-		}
-
-		// Append the message to the messages slice
-		messages = append(messages, msg)
-	}
-	return messages, nil
-}
-
-func GetIndex() (bleve.Index, error) {
-	appFolder, err := fs.MaybeCreateProgramFolder("assistent")
-	indexPath := filepath.Join(appFolder, "chat_messages.bleve")
-	pathExists, err := fs.PathExists(indexPath)
-	if err != nil {
-		return nil, err
-	}
-	if pathExists {
-		index, err := bleve.Open(indexPath)
+	messages := []model.Message{}
+	for rows.Next() {
+		var m model.Message
+		err := rows.Scan(&m.ID, &m.DialogId, &m.Timestamp, &m.Role, &m.Content)
 		if err != nil {
 			return nil, err
-		} else if index != nil {
-			return index, nil
-		} else {
-			return nil, errors.New("path for DB exist but I can't open it")
 		}
+		messages = append(messages, m)
 	}
-	indexMapping := buildMapping()
-	index, err := bleve.New(indexPath, indexMapping)
-	if err != nil {
-		return nil, err
-	}
-	return index, nil
-}
 
-func DeleteMessage(id string) error {
-	idx, err := GetIndex()
-	if err != nil {
-		return err
-	}
-	fmt.Println("here")
-	err = idx.Delete(id)
-	if err != nil {
-		return err
-	}
-	return nil
+	return messages, nil
 }

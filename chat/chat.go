@@ -20,12 +20,7 @@ func StartChat(dialogId string) error {
 
 	// Create a new scanner to read messages from the user
 	scanner := bufio.NewScanner(os.Stdin)
-	index, err := db.GetIndex()
-	if err != nil {
-		return err
-	}
-	defer index.Close()
-	messages, err := db.GetMessagesByDialogId(dialogId, index)
+	messages, err := db.GetMessagesByDialogID(dialogId)
 	if err != nil {
 		return err
 	}
@@ -55,10 +50,7 @@ func StartChat(dialogId string) error {
 		}
 		messages = append(messages, newMessage)
 		over, err := gpt.IsDialogOver(messages)
-		if err != nil {
-			return err
-		}
-		if over {
+		if err != nil && over {
 			break
 		}
 		messages, err := gpt.Message(messages, dialogId)
@@ -66,11 +58,11 @@ func StartChat(dialogId string) error {
 			fmt.Printf("Error: %s\n", err)
 			continue
 		}
-		if err = index.Index(newMessage.ID, newMessage); err != nil {
+		if _, err = db.StoreMessage(newMessage); err != nil {
 			return err
 		}
 		lastMessage := messages[len(messages)-1]
-		if err = index.Index(lastMessage.ID, lastMessage); err != nil {
+		if _, err = db.StoreMessage(lastMessage); err != nil {
 			return err
 		}
 
