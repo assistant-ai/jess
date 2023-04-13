@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func IsDialogOver(messages []model.Message, ctx model.AppContext) (bool, error) {
+func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error) {
 	url := "https://api.openai.com/v1/chat/completions"
 
 	// Create a new chat.Message with the GPT-4 response
@@ -60,7 +60,7 @@ func IsDialogOver(messages []model.Message, ctx model.AppContext) (bool, error) 
 	return result, nil
 }
 
-func Message(messages []model.Message, dialogId string, ctx model.AppContext) ([]model.Message, error) {
+func Message(messages []model.Message, dialogId string, ctx *model.AppContext) ([]model.Message, error) {
 	url := "https://api.openai.com/v1/chat/completions"
 
 	requestBody, err := prepareGPT4RequestBody(messages)

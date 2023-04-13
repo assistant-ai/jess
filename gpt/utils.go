@@ -39,7 +39,7 @@ func TrimMessages(messages []model.Message, maxContentSize int) []model.Message 
 		messageSize := utf8.RuneCountInString(message.Content)
 		if remainingSize+messageSize <= maxContentSize {
 			remainingSize += messageSize
-			trimmedMessages = append(trimmedMessages, message)
+			trimmedMessages = append([]model.Message{message}, trimmedMessages...)
 		} else {
 			break
 		}

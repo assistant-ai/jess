@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/assistent-ai/client/chat"
 	"github.com/assistent-ai/client/cli"
@@ -12,6 +13,8 @@ import (
 	"github.com/assistent-ai/client/model"
 	"github.com/spf13/cobra"
 )
+
+const Version = "0.0.1" // Your CLI version
 
 func main() {
 	rootCmd := &cobra.Command{
@@ -36,6 +39,21 @@ func main() {
 		},
 	}
 
+	startDeafultCmd := &cobra.Command{
+		Use:   "default",
+		Short: "Continue default dialog.",
+		Run: func(cmd *cobra.Command, args []string) {
+			ctx, err := initContext(apiKeyFilePath)
+			if err != nil {
+				cli.PrintErrorAndExit(err)
+			}
+			err = chat.StartChat(model.DefaultDialogId, ctx)
+			if err != nil {
+				cli.PrintErrorAndExit(err)
+			}
+		},
+	}
+
 	startCmd := &cobra.Command{
 		Use:   "continue [id]",
 		Short: "Continue dialog with id. If id does not exist it will be created",
@@ -46,7 +64,11 @@ func main() {
 				id := args[0]
 				// Replace with your actual logic to start a new conversation
 				fmt.Println("Starting a new conversation...")
-				err := chat.StartChat(id)
+				ctx, err := initContext(apiKeyFilePath)
+				if err != nil {
+					cli.PrintErrorAndExit(err)
+				}
+				err = chat.StartChat(id, ctx)
 				if err != nil {
 					cli.PrintErrorAndExit(err)
 				}
@@ -109,7 +131,11 @@ func main() {
 			if err != nil {
 				cli.PrintErrorAndExit(err)
 			} else {
-				err := chat.StartChat(model.DefaultDialogId)
+				ctx, err := initContext(apiKeyFilePath)
+				if err != nil {
+					cli.PrintErrorAndExit(err)
+				}
+				err = chat.StartChat(model.DefaultDialogId, ctx)
 				if err != nil {
 					cli.PrintErrorAndExit(err)
 				}
@@ -117,9 +143,27 @@ func main() {
 		},
 	}
 
-	rootCmd.AddCommand(listCmd, startCmd, showCmd, deleteCmd, deleteDefaultCmd, restartDefaultCmd)
+	var versionCmd = &cobra.Command{
+		Use:   "version",
+		Short: "Print the version number of the CLI",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Printf("CLI version: %s\n", Version)
+		},
+	}
+
+	rootCmd.AddCommand(versionCmd, startDeafultCmd, listCmd, startCmd, showCmd, deleteCmd, deleteDefaultCmd, restartDefaultCmd)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func initContext(openAiKeyFilePath string) (*model.AppContext, error) {
+	b, err := os.ReadFile(openAiKeyFilePath) // just pass the file name
+	if err != nil {
+		return nil, err
+	}
+	return &model.AppContext{
+		OpenAiKey: strings.ReplaceAll(string(b), "\n", ""),
+	}, nil
 }

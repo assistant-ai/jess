@@ -20,7 +20,7 @@ func ShowMessages(messages []model.Message) {
 	}
 }
 
-func StartChat(dialogId string, ctx model.AppContext) error {
+func StartChat(dialogId string, ctx *model.AppContext) error {
 	if dialogId == "" {
 		dialogId = model.DefaultDialogId
 	}

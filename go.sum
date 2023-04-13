@@ -39,6 +39,8 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/RoaringBitmap/roaring v0.4.23 h1:gpyfd12QohbqhFO4NVDUdoPOCXsyahYRQhINmlHxKeo=
 github.com/RoaringBitmap/roaring v0.4.23/go.mod h1:D0gp8kJQgE1A4LQ5wFLggQEyvDi06Mq5mKs52e1TwOo=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
+github.com/b0noi/go-utils v1.1.0 h1:xER3tUwArJvAfEarbLcPalAU+ykN6NcntGwqeU1d/Zk=
+github.com/b0noi/go-utils v1.1.0/go.mod h1:X/cyi6RGVZ46VJvab296K0ccN8Dj1fKGcO8T5AJT93E=
 github.com/b0noi/go-utils/v2 v2.1.0 h1:K/IhZY91USJFEubp7kwywQ7GzhitqlETQrFXuFx3AXI=
 github.com/b0noi/go-utils/v2 v2.1.0/go.mod h1:CWVmfkHgjFYMjkR/gF5sBd8V85Urq5v7RsCzwqXj0ng=
 github.com/blevesearch/bleve v1.0.14 h1:Q8r+fHTt35jtGXJUM0ULwM3Tzg+MRfyai4ZkWDy2xO4=
