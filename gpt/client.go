@@ -14,8 +14,6 @@ import (
 )
 
 func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error) {
-	url := "https://api.openai.com/v1/chat/completions"
-
 	// Create a new chat.Message with the GPT-4 response
 	newMessage := model.Message{
 		ID:        "", // You can assign a new ID here
@@ -27,12 +25,12 @@ func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error)
 
 	messages = append(messages, newMessage)
 
-	requestBody, err := prepareGPT4RequestBody(messages)
+	requestBody, err := prepareGPT4RequestBody(messages, ModelGPT3Turbo)
 	if err != nil {
 		return false, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", API_URL, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return false, err
 	}
@@ -61,14 +59,12 @@ func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error)
 }
 
 func Message(messages []model.Message, dialogId string, ctx *model.AppContext) ([]model.Message, error) {
-	url := "https://api.openai.com/v1/chat/completions"
-
-	requestBody, err := prepareGPT4RequestBody(messages)
+	requestBody, err := prepareGPT4RequestBody(messages, ModelGPT4)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequest("POST", API_URL, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +109,7 @@ func addGPT4Response(response GptChatCompletionMessage, messages []model.Message
 	return messages, nil
 }
 
-func prepareGPT4RequestBody(messages []model.Message) ([]byte, error) {
+func prepareGPT4RequestBody(messages []model.Message, model GPTModel) ([]byte, error) {
 	// Create a new slice to hold message maps
 	gptMessages := make([]map[string]string, len(messages))
 
@@ -137,7 +133,7 @@ func prepareGPT4RequestBody(messages []model.Message) ([]byte, error) {
 		"messages":   gptMessages,
 		"max_tokens": 2000,
 		"n":          1,
-		"model":      "gpt-4",
+		"model":      model,
 	})
 
 	if err != nil {

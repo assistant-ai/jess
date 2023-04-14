@@ -13,6 +13,25 @@ import (
 	"github.com/google/uuid"
 )
 
+func thinkingAnimation(quit chan bool) {
+	spinChars := []rune{'-', '\\', '|', '/'}
+	i := 0
+	for {
+		select {
+		case <-quit:
+			return
+		default:
+			fmt.Printf("\rThinking %c", spinChars[i])
+			time.Sleep(100 * time.Millisecond)
+
+			i++
+			if i == len(spinChars) {
+				i = 0
+			}
+		}
+	}
+}
+
 func ShowMessages(messages []model.Message) {
 	for _, message := range messages {
 		formattedTimestamp := message.Timestamp.Format(model.TimestampFormattingTemplate)
@@ -24,6 +43,7 @@ func StartChat(dialogId string, ctx *model.AppContext) error {
 	if dialogId == "" {
 		dialogId = model.DefaultDialogId
 	}
+	quit := make(chan bool)
 
 	// Create a new scanner to read messages from the user
 	scanner := bufio.NewScanner(os.Stdin)
@@ -53,11 +73,12 @@ func StartChat(dialogId string, ctx *model.AppContext) error {
 			Content:   scanner.Text(),
 		}
 		messages = append(messages, newMessage)
+		go thinkingAnimation(quit)
 		over, err := gpt.IsDialogOver(messages, ctx)
 		if err != nil && over {
 			break
 		}
-		messages := gpt.TrimMessages(messages, 10000)
+		messages := gpt.TrimMessages(messages, 8)
 		messages, err = gpt.Message(messages, dialogId, ctx)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
@@ -70,9 +91,10 @@ func StartChat(dialogId string, ctx *model.AppContext) error {
 		if _, err = db.StoreMessage(lastMessage); err != nil {
 			return err
 		}
+		quit <- true
 
 		// Print the last message
-		fmt.Printf("%s: %s\n", lastMessage.Role, lastMessage.Content)
+		fmt.Printf("\n\n\n%s: %s\n", lastMessage.Role, lastMessage.Content)
 	}
 
 	// If we've reached the end of input, print a goodbye message
