@@ -1,21 +1,21 @@
-package chat
+package cli
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
-	"time"
-	"bytes"
 	"text/template"
-
-	"github.com/assistent-ai/client/gpt"
-	"github.com/assistent-ai/client/model"
+	"time"
 
 	"github.com/assistent-ai/client/db"
+	"github.com/assistent-ai/client/gpt"
+	"github.com/assistent-ai/client/model"
+	"github.com/assistent-ai/client/utils"
 	"github.com/google/uuid"
 )
 
-func thinkingAnimation(quit chan bool) {
+func AnimateThinking(quit chan bool) {
 	spinChars := []rune{'-', '\\', '|', '/'}
 	i := 0
 	for {
@@ -34,29 +34,18 @@ func thinkingAnimation(quit chan bool) {
 	}
 }
 
-func GeneratePromptForFile(input model.FileInput) (string, error) {
-	tmpl := `
-I am going to give you instructions and the content of the file, you have to output new verison of the file.
-What you tell me I will directly put in the file replacing everything that I showed to you, so you have to print FULL content of the file, even if you changing small part of it.
-Do not forget to put correct new lines (\n) where required and correclty format the file.
-Here is the instructions what to do with the file: {{.UserMessage}}
-And here is file content:
-{{.FileContent}}
-`
-	// Parse the template
-	template, err := template.New("fileTemplate").Parse(tmpl)
+func generatePrompt(input model.FileInput, tmplFile string) (string, error) {
+	template, err := template.New("fileTemplate").Parse(tmplFile)
 	if err != nil {
 		return "", err
 	}
 
-	// Execute the template and write the output to a buffer
 	var output bytes.Buffer
 	err = template.Execute(&output, input)
 	if err != nil {
 		return "", err
 	}
 
-	// Print the resulting string
 	return output.String(), nil
 }
 
@@ -67,16 +56,36 @@ func ShowMessages(messages []model.Message) {
 	}
 }
 
+func readNewMessage(scanner *bufio.Scanner, dialogId string) (model.Message, error) {
+	fmt.Print("You: ")
+
+	if !scanner.Scan() {
+		return model.Message{}, fmt.Errorf("Error reading input")
+	}
+	msgUUID, err := uuid.NewRandom()
+	if err != nil {
+		return model.Message{}, err
+	}
+	msgId := msgUUID.String()
+
+	return model.Message{
+		ID:        msgId,
+		DialogId:  dialogId,
+		Timestamp: time.Now(),
+		Role:      model.UserRoleName,
+		Content:   scanner.Text(),
+	}, nil
+}
+
 func StartChat(dialogId string, ctx *model.AppContext) error {
 	if dialogId == "" {
 		dialogId = model.DefaultDialogId
 	}
 	quit := make(chan bool)
 
-	// Create a new scanner to read messages from the user
 	scanner := bufio.NewScanner(os.Stdin)
 	messages := make([]model.Message, 0)
-	if (dialogId != model.RandomDialogId) {
+	if dialogId != model.RandomDialogId {
 		messages, err := db.GetMessagesByDialogID(dialogId)
 		if err != nil {
 			return err
@@ -85,31 +94,19 @@ func StartChat(dialogId string, ctx *model.AppContext) error {
 	}
 
 	for {
-		// Print a prompt to the user
-		fmt.Print("You: ")
-
-		// Read a line of text from the user
-		if !scanner.Scan() {
-			// If there was an error reading input, break out of the loop
+		newMessage, err := readNewMessage(scanner, dialogId)
+		if err != nil {
 			break
 		}
-		msgUUID, err := uuid.NewRandom()
-		msgId := msgUUID.String()
 
-		newMessage := model.Message{
-			ID:        msgId,
-			DialogId:  dialogId,
-			Timestamp: time.Now(),
-			Role:      model.UserRoleName,
-			Content:   scanner.Text(),
-		}
 		messages = append(messages, newMessage)
-		go thinkingAnimation(quit)
+		go AnimateThinking(quit)
+
 		over, err := gpt.IsDialogOver(messages, ctx)
 		if err != nil && over {
 			break
 		}
-		messages := gpt.TrimMessages(messages, 8)
+		messages = utils.TrimMessages(messages, 8)
 		messages, err = gpt.Message(messages, dialogId, ctx)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
@@ -124,11 +121,21 @@ func StartChat(dialogId string, ctx *model.AppContext) error {
 		}
 		quit <- true
 
-		// Print the last message
 		fmt.Printf("\n\n\n%s: %s\n", lastMessage.Role, lastMessage.Content)
 	}
 
-	// If we've reached the end of input, print a goodbye message
 	fmt.Println("Goodbye!")
 	return nil
+}
+
+func GeneratePromptForFile(input model.FileInput) (string, error) {
+	fileTemplate := `
+I am going to give you instructions and the content of the file, you have to output new verison of the file.
+What you tell me I will directly put in the file replacing everything that I showed to you, so you have to print FULL content of the file, even if you changing small part of it.
+Do not forget to put correct new lines (\n) where required and correclty format the file.
+Here is the instructions what to do with the file: {{.UserMessage}}
+And here is file content:
+{{.FileContent}}
+`
+	return generatePrompt(input, fileTemplate)
 }

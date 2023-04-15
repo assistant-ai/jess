@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/assistent-ai/client/chat"
 	jess_cli "github.com/assistent-ai/client/cli"
 	"github.com/assistent-ai/client/db"
 	"github.com/assistent-ai/client/gpt"
@@ -124,7 +123,7 @@ func handleDialogContinue(id string, apiKeyFilePath *string) {
 	if err != nil {
 		cli.Exit(err, 1)
 	}
-	err = chat.StartChat(id, ctx)
+	err = jess_cli.StartChat(id, ctx)
 	if err != nil {
 		cli.Exit(err, 1)
 	}
@@ -135,7 +134,7 @@ func handleDialogShow(id string) {
 	if err != nil {
 		cli.Exit(err, 1)
 	} else {
-		chat.ShowMessages(messages)
+		jess_cli.ShowMessages(messages)
 	}
 }
 
@@ -184,15 +183,30 @@ func handleFileAction(apiKeyFilePath *string) func(c *cli.Context) error {
 		if refactor {
 			prompt = "Refactor following file, extract code, de-duplicate, apply all best practices that you can think off that would be valuable here and would improve readability"
 		}
-		ctx, _ := initContext(*apiKeyFilePath)
-		b, _ := os.ReadFile(filePath)
+		ctx, err := initContext(*apiKeyFilePath)
+		if err != nil {
+			return err
+		}
+		b, err := os.ReadFile(filePath)
+		if err != nil {
+			return err
+		}
 		input := model.FileInput{
 			UserMessage: prompt,
 			FileContent: string(b),
 		}
-		gptPrompt, _ := chat.GeneratePromptForFile(input)
-		answer, _ := gpt.RandomMessage(gptPrompt, ctx)
-		fmt.Println(answer)
+		gptPrompt, err := jess_cli.GeneratePromptForFile(input)
+		if err != nil {
+			return err
+		}
+		quit := make(chan bool)
+		go jess_cli.AnimateThinking(quit)
+		answer, err := gpt.RandomMessage(gptPrompt, ctx)
+		if err != nil {
+			return err
+		}
+		quit <- true
+		fmt.Println("\n\n" + answer)
 		return nil
 	}
 }
