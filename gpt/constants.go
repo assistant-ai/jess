@@ -1,8 +1,10 @@
-package model
+package gpt
 
-const UserRoleName = "user"
-const AssistentRoleNeam = "assistant"
-const SystemRoleName = "system"
-const DefaultDialogId = "default"
-const RandomDialogId = "random"
-const TimestampFormattingTemplate = "2006-01-02 15:04:05"
+const API_URL = "https://api.openai.com/v1/chat/completions"
+
+type GPTModel string
+
+const (
+	ModelGPT4      GPTModel = "gpt-4"
+	ModelGPT3Turbo GPTModel = "gpt-3.5-turbo"
+)
