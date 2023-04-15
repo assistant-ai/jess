@@ -129,10 +129,19 @@ func main() {
 					Usage:    "prompt input to pass with the file",
 					Required: true,
 				},
+				&cli.BoolFlag{
+					Name:    "refactor",
+					Aliases: []string{"r"},
+					Usage:   "refactor file by applying best practices",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				filePath := c.String("path")
 				prompt := c.String("input")
+				refactor := c.Bool("refactor")
+				if refactor {
+					prompt = "Refactor following file, extract code, de-duplicate, apply all best practices that you can think off that would be valuable here and would improve readability"
+				}
 				ctx, _ := initContext(apiKeyFilePath)
 				b, _ := os.ReadFile(filePath)
 				input := model.FileInput{
