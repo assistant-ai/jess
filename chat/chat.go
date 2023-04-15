@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"bytes"
+	"text/template"
 
 	"github.com/assistent-ai/client/gpt"
 	"github.com/assistent-ai/client/model"
@@ -32,6 +34,32 @@ func thinkingAnimation(quit chan bool) {
 	}
 }
 
+func GeneratePromptForFile(input model.FileInput) (string, error) {
+	tmpl := `
+I am going to give you instructions and the content of the file, you have to output new verison of the file.
+What you tell me I will directly put in the file replacing everything that I showed to you, so you have to print FULL content of the file, even if you changing small part of it.
+Do not forget to put correct new lines (\n) where required and correclty format the file.
+Here is the instructions what to do with the file: {{.UserMessage}}
+And here is file content:
+{{.FileContent}}
+`
+	// Parse the template
+	template, err := template.New("fileTemplate").Parse(tmpl)
+	if err != nil {
+		return "", err
+	}
+
+	// Execute the template and write the output to a buffer
+	var output bytes.Buffer
+	err = template.Execute(&output, input)
+	if err != nil {
+		return "", err
+	}
+
+	// Print the resulting string
+	return output.String(), nil
+}
+
 func ShowMessages(messages []model.Message) {
 	for _, message := range messages {
 		formattedTimestamp := message.Timestamp.Format(model.TimestampFormattingTemplate)
@@ -47,11 +75,14 @@ func StartChat(dialogId string, ctx *model.AppContext) error {
 
 	// Create a new scanner to read messages from the user
 	scanner := bufio.NewScanner(os.Stdin)
-	messages, err := db.GetMessagesByDialogID(dialogId)
-	if err != nil {
-		return err
+	messages := make([]model.Message, 0)
+	if (dialogId != model.RandomDialogId) {
+		messages, err := db.GetMessagesByDialogID(dialogId)
+		if err != nil {
+			return err
+		}
+		ShowMessages(messages)
 	}
-	ShowMessages(messages)
 
 	for {
 		// Print a prompt to the user

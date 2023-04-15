@@ -58,6 +58,25 @@ func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error)
 	return result, nil
 }
 
+func RandomMessage(message string, ctx *model.AppContext) (string, error) {
+	uuidMsg, err := uuid.NewUUID()
+	idMsg := uuidMsg.String()
+	newMessage := model.Message{
+		ID:        idMsg,    // You can assign a new ID here
+		DialogId:  model.RandomDialogId, // You can assign a new DialogId here
+		Timestamp: time.Now(),
+		Role:      model.UserRoleName,
+		Content:   message,
+	}
+	messages := make([]model.Message, 1)
+	messages[0] = newMessage
+	response, err := Message(messages, model.RandomDialogId, ctx)
+	if err != nil {
+		return "", err
+	}
+	return response[1].Content, nil
+}
+
 func Message(messages []model.Message, dialogId string, ctx *model.AppContext) ([]model.Message, error) {
 	requestBody, err := prepareGPT4RequestBody(messages, ModelGPT4)
 	if err != nil {

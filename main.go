@@ -8,153 +8,130 @@ import (
 	"strings"
 
 	"github.com/assistent-ai/client/chat"
-	"github.com/assistent-ai/client/cli"
+	jess_cli "github.com/assistent-ai/client/cli"
 	"github.com/assistent-ai/client/db"
+	"github.com/assistent-ai/client/gpt"
 	"github.com/assistent-ai/client/model"
-	"github.com/spf13/cobra"
+	"github.com/urfave/cli/v2"
 )
 
 const Version = "2"
 
 func main() {
-	rootCmd := &cobra.Command{
-		Use:   "jessica",
-		Short: "Jessica is an AI assistent.",
-	}
-
 	apiKeyFilePath := ""
 	defaultFilePath := filepath.Join(os.Getenv("HOME"), ".open-ai.key")
-	rootCmd.PersistentFlags().StringVar(&apiKeyFilePath, "key-file", defaultFilePath, "Path to the text file containing the API key")
-
-	listCmd := &cobra.Command{
-		Use:   "list",
-		Short: "List all conversations",
-		Run: func(cmd *cobra.Command, args []string) {
-			dialogIds, err := db.GetDialogIDs()
-			if err != nil {
-				cli.PrintErrorAndExit(err)
-			} else {
-				cli.PrintDialogIDs(dialogIds)
-			}
+	app := cli.NewApp()
+	app.Name = "jessica"
+	app.Usage = "Jessica is an AI assistent."
+	app.Version = Version
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{
+			Name:        "key-file",
+			Value:       defaultFilePath,
+			Usage:       "Path to the text file containing the API key",
+			Destination: &apiKeyFilePath,
 		},
 	}
 
-	startDeafultCmd := &cobra.Command{
-		Use:   "default",
-		Short: "Continue default dialog.",
-		Run: func(cmd *cobra.Command, args []string) {
-			ctx, err := initContext(apiKeyFilePath)
-			if err != nil {
-				cli.PrintErrorAndExit(err)
-			}
-			err = chat.StartChat(model.DefaultDialogId, ctx)
-			if err != nil {
-				cli.PrintErrorAndExit(err)
-			}
+	app.Commands = []*cli.Command{
+		{
+			Name:  "dialog",
+			Usage: "Manage dialogs",
+			Subcommands: []*cli.Command{
+				{
+					Name:  "list",
+					Usage: "List all conversations",
+					Action: func(c *cli.Context) error {
+						dialogIds, err := db.GetDialogIDs()
+						if err != nil {
+							cli.Exit(err, 1)
+						} else {
+							jess_cli.PrintDialogIDs(dialogIds)
+						}
+						return nil
+					},
+				},
+				{
+					Name:  "continue",
+					Usage: "Continue a dialog with the specified ID",
+					Action: func(c *cli.Context) error {
+						id := c.Args().First()
+						if id == "" {
+							cli.Exit(errors.New("please provide dialog id"), 1)
+						} else {
+							// Replace with your actual logic to start a new conversation
+							fmt.Println("Starting a new conversation...")
+							ctx, err := initContext(apiKeyFilePath)
+							if err != nil {
+								cli.Exit(err, 1)
+							}
+							err = chat.StartChat(id, ctx)
+							if err != nil {
+								cli.Exit(err, 1)
+							}
+						}
+						return nil
+					},
+				},
+				{
+					Name:  "show",
+					Usage: "Show conversation by ID",
+					Action: func(c *cli.Context) error {
+						id := c.Args().First()
+						if id == "" {
+							cli.Exit(errors.New("please provide dialog id"), 1)
+						} else {
+							messages, err := db.GetMessagesByDialogID(id)
+							if err != nil {
+								cli.Exit(err, 1)
+							} else {
+								chat.ShowMessages(messages)
+							}
+						}
+						return nil
+					},
+				},
+				{
+					Name:  "delete",
+					Usage: "Delete conversation by ID",
+					Action: func(c *cli.Context) error {
+						id := c.Args().First()
+						if id == "" {
+							cli.Exit(errors.New("please provide dialog id"), 1)
+						} else {
+							err := db.RemoveMessagesByDialogId(id)
+							if err != nil {
+								cli.Exit(err, 1)
+							}
+						}
+						return nil
+					},
+				},
+			},
 		},
-	}
-
-	startCmd := &cobra.Command{
-		Use:   "continue [id]",
-		Short: "Continue dialog with id. If id does not exist it will be created",
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				cli.PrintErrorAndExit(errors.New("please provide dialog id"))
-			} else {
-				id := args[0]
-				// Replace with your actual logic to start a new conversation
-				fmt.Println("Starting a new conversation...")
-				ctx, err := initContext(apiKeyFilePath)
-				if err != nil {
-					cli.PrintErrorAndExit(err)
+		{
+			Name:  "file",
+			Usage: "Process file input",
+			Action: func(c *cli.Context) error {
+				filePath := c.Args().Get(0)
+				prompt := c.Args().Get(1)
+				ctx, _ := initContext(apiKeyFilePath)
+				b, _ := os.ReadFile(filePath)
+				input := model.FileInput{
+					UserMessage: prompt,
+					FileContent: string(b),
 				}
-				err = chat.StartChat(id, ctx)
-				if err != nil {
-					cli.PrintErrorAndExit(err)
-				}
-			}
+				gptPrompt, _ := chat.GeneratePromptForFile(input)
+				answer, _ := gpt.RandomMessage(gptPrompt, ctx)
+				fmt.Println(answer)
+				return nil
+			},
 		},
 	}
 
-	showCmd := &cobra.Command{
-		Use:   "show [id]",
-		Short: "Show conversation by ID",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				cli.PrintErrorAndExit(errors.New("please provide dialog id"))
-			} else {
-				id := args[0]
-				messages, err := db.GetMessagesByDialogID(id)
-				if err != nil {
-					cli.PrintErrorAndExit(err)
-				} else {
-					chat.ShowMessages(messages)
-				}
-			}
-		},
-	}
-
-	deleteCmd := &cobra.Command{
-		Use:   "delete [id]",
-		Short: "Delete conversation by ID",
-		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			if len(args) == 0 {
-				cli.PrintErrorAndExit(errors.New("please provide dialog id"))
-			} else {
-				id := args[0]
-				err := db.RemoveMessagesByDialogId(id)
-				if err != nil {
-					cli.PrintErrorAndExit(err)
-				}
-			}
-		},
-	}
-
-	deleteDefaultCmd := &cobra.Command{
-		Use:   "delete-default",
-		Short: "Delete default conversation",
-		Run: func(cmd *cobra.Command, args []string) {
-			err := db.RemoveMessagesByDialogId(model.DefaultDialogId)
-			if err != nil {
-				cli.PrintErrorAndExit(err)
-			}
-		},
-	}
-
-	restartDefaultCmd := &cobra.Command{
-		Use:   "restart-default",
-		Short: "Removes all default messages and starts new default from scratch",
-		Run: func(cmd *cobra.Command, args []string) {
-			err := db.RemoveMessagesByDialogId(model.DefaultDialogId)
-			if err != nil {
-				cli.PrintErrorAndExit(err)
-			} else {
-				ctx, err := initContext(apiKeyFilePath)
-				if err != nil {
-					cli.PrintErrorAndExit(err)
-				}
-				err = chat.StartChat(model.DefaultDialogId, ctx)
-				if err != nil {
-					cli.PrintErrorAndExit(err)
-				}
-			}
-		},
-	}
-
-	var versionCmd = &cobra.Command{
-		Use:   "version",
-		Short: "Print the version number of the CLI",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("CLI version: %s\n", Version)
-		},
-	}
-
-	rootCmd.AddCommand(versionCmd, startDeafultCmd, listCmd, startCmd, showCmd, deleteCmd, deleteDefaultCmd, restartDefaultCmd)
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	err := app.Run(os.Args)
+	if err != nil {
+		cli.Exit(err, 1)
 	}
 }
 
