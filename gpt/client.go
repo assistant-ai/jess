@@ -14,15 +14,7 @@ import (
 )
 
 func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error) {
-	// Create a new chat.Message with the GPT-4 response
-	newMessage := model.Message{
-		ID:        "", // You can assign a new ID here
-		DialogId:  "", // You can assign a new DialogId here
-		Timestamp: time.Now(),
-		Role:      model.SystemRoleName,
-		Content:   "Based on the last response from the user, is this dialog over? Please respond with true/false only",
-	}
-
+	newMessage := createNewMessage(model.SystemRoleName, "Based on the last response from the user, is this dialog over? Please respond with true/false only")
 	messages = append(messages, newMessage)
 
 	requestBody, err := prepareGPT4RequestBody(messages, ModelGPT3Turbo)
@@ -30,27 +22,11 @@ func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error)
 		return false, err
 	}
 
-	req, err := http.NewRequest("POST", API_URL, bytes.NewBuffer(requestBody))
+	response, err := sendGPTRequest(requestBody, ctx)
 	if err != nil {
 		return false, err
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", ctx.OpenAiKey))
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-	var response GptChatCompletionMessage
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return false, err
-	}
-	if len(response.Choices) == 0 {
-		return false, errors.New("Error response from GPT")
-	}
 	result, err := strconv.ParseBool(response.Choices[0].Message.Content)
 	if err != nil {
 		return false, err
@@ -59,17 +35,9 @@ func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error)
 }
 
 func RandomMessage(message string, ctx *model.AppContext) (string, error) {
-	uuidMsg, err := uuid.NewUUID()
-	idMsg := uuidMsg.String()
-	newMessage := model.Message{
-		ID:        idMsg,    // You can assign a new ID here
-		DialogId:  model.RandomDialogId, // You can assign a new DialogId here
-		Timestamp: time.Now(),
-		Role:      model.UserRoleName,
-		Content:   message,
-	}
-	messages := make([]model.Message, 1)
-	messages[0] = newMessage
+	newMessage := createNewMessage(model.UserRoleName, message)
+	messages := []model.Message{newMessage}
+
 	response, err := Message(messages, model.RandomDialogId, ctx)
 	if err != nil {
 		return "", err
@@ -83,6 +51,28 @@ func Message(messages []model.Message, dialogId string, ctx *model.AppContext) (
 		return nil, err
 	}
 
+	response, err := sendGPTRequest(requestBody, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return addGPT4Response(response, messages, dialogId)
+}
+
+func createNewMessage(role, content string) model.Message {
+	uuidMsg, _ := uuid.NewUUID()
+	idMsg := uuidMsg.String()
+
+	return model.Message{
+		ID:        idMsg,
+		DialogId:  "",
+		Timestamp: time.Now(),
+		Role:      role,
+		Content:   content,
+	}
+}
+
+func sendGPTRequest(requestBody []byte, ctx *model.AppContext) (*GptChatCompletionMessage, error) {
 	req, err := http.NewRequest("POST", API_URL, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
@@ -97,57 +87,31 @@ func Message(messages []model.Message, dialogId string, ctx *model.AppContext) (
 		return nil, err
 	}
 	defer resp.Body.Close()
+
 	var response GptChatCompletionMessage
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
 	}
-	return addGPT4Response(response, messages, dialogId)
+
+	if len(response.Choices) == 0 {
+		return nil, errors.New("Error response from GPT")
+	}
+
+	return &response, nil
 }
 
-func addGPT4Response(response GptChatCompletionMessage, messages []model.Message, dialogId string) ([]model.Message, error) {
-	// Assume we're only getting 1 response, so we use the first choice
+func addGPT4Response(response *GptChatCompletionMessage, messages []model.Message, dialogId string) ([]model.Message, error) {
 	gpt4Text := response.Choices[0].Message.Content
-	uuidMsg, err := uuid.NewUUID()
-	if err != nil {
-		return nil, err
-	}
-	idMsg := uuidMsg.String()
-
-	// Create a new chat.Message with the GPT-4 response
-	newMessage := model.Message{
-		ID:        idMsg,    // You can assign a new ID here
-		DialogId:  dialogId, // You can assign a new DialogId here
-		Timestamp: time.Now(),
-		Role:      model.AssistentRoleNeam,
-		Content:   gpt4Text,
-	}
-
+	newMessage := createNewMessage(model.AssistentRoleNeam, gpt4Text)
+	newMessage.DialogId = dialogId
 	messages = append(messages, newMessage)
 
-	// Append the new message to the input messages slice
 	return messages, nil
 }
 
 func prepareGPT4RequestBody(messages []model.Message, model GPTModel) ([]byte, error) {
-	// Create a new slice to hold message maps
-	gptMessages := make([]map[string]string, len(messages))
+	gptMessages := convertMessagesToMaps(messages)
 
-	// Iterate through the input messages
-	for i, message := range messages {
-		// Convert the timestamp to a human-readable format
-		formattedTimestamp := message.Timestamp.Format("2006-01-02 15:04:05")
-
-		// Combine the content with the timestamp
-		combinedContent := fmt.Sprintf("%s: %s", formattedTimestamp, message.Content)
-
-		// Add the message to the gptMessages slice
-		gptMessages[i] = map[string]string{
-			"role":    message.Role,
-			"content": combinedContent,
-		}
-	}
-
-	// Marshal the request body for GPT-4
 	requestBody, err := json.Marshal(map[string]interface{}{
 		"messages":   gptMessages,
 		"max_tokens": 2000,
@@ -160,4 +124,20 @@ func prepareGPT4RequestBody(messages []model.Message, model GPTModel) ([]byte, e
 	}
 
 	return requestBody, nil
+}
+
+func convertMessagesToMaps(messages []model.Message) []map[string]string {
+	gptMessages := make([]map[string]string, len(messages))
+
+	for i, message := range messages {
+		formattedTimestamp := message.Timestamp.Format("2006-01-02 15:04:05")
+		combinedContent := fmt.Sprintf("%s: %s", formattedTimestamp, message.Content)
+
+		gptMessages[i] = map[string]string{
+			"role":    message.Role,
+			"content": combinedContent,
+		}
+	}
+
+	return gptMessages
 }
