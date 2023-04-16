@@ -3,7 +3,7 @@ set -e
 
 # Set the binary name, version, and repository URL here
 BINARY_NAME="jess"
-VERSION="2"
+VERSION="v2"
 REPOSITORY="https://github.com/assistant-ai/jess/releases/download/${VERSION}"
 
 # Check the OS and architecture to download the correct binary
