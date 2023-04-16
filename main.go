@@ -14,7 +14,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-const Version = "2"
+var version = "unknown"
 
 func main() {
 	apiKeyFilePath := ""
@@ -31,7 +31,7 @@ func setupApp(apiKeyFilePath *string, defaultFilePath string) *cli.App {
 	app := cli.NewApp()
 	app.Name = "jessica"
 	app.Usage = "Jessica is an AI assistent."
-	app.Version = Version
+	app.Version = version
 	app.Flags = defineGlobalFlags(apiKeyFilePath, defaultFilePath)
 
 	app.Commands = defineCommands(apiKeyFilePath)
@@ -177,6 +177,11 @@ func fileFlags() []cli.Flag {
 			Aliases: []string{"e"},
 			Usage:   "explain to me what is going on here",
 		},
+		&cli.BoolFlag{
+			Name:    "override",
+			Aliases: []string{"o"},
+			Usage:   "write output in the same input file instead of stdout",
+		},
 	}
 }
 
@@ -186,6 +191,7 @@ func handleFileAction(apiKeyFilePath *string) func(c *cli.Context) error {
 		prompt := c.String("prompt")
 		refactor := c.Bool("refactor")
 		explain := c.Bool("explain")
+		override := c.Bool("override")
 		if refactor {
 			prompt = "Refactor following file, extract code, de-duplicate, apply all best practices that you can think off that would be valuable here and would improve readability"
 		} else if explain {
@@ -214,7 +220,14 @@ func handleFileAction(apiKeyFilePath *string) func(c *cli.Context) error {
 			return err
 		}
 		quit <- true
-		fmt.Println("\n\n" + answer)
+		if override {
+			err = os.WriteFile(filePath, []byte(answer), 0644)
+			if err != nil {
+				return err
+			}
+		} else {
+			fmt.Println("\n\n" + answer)
+		}
 		return nil
 	}
 }

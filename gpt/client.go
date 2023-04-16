@@ -13,7 +13,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const systemContextMessage = "Your name is: Jess. You are an AI developer assistant who helps with software development."
+
 func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error) {
+	contextMessage := createNewMessage(model.SystemRoleName, systemContextMessage)
+	messages = append([]model.Message{contextMessage}, messages...)
 	newMessage := createNewMessage(model.SystemRoleName, "Based on the last response from the user, is this dialog over? Please respond with true/false only")
 	messages = append(messages, newMessage)
 
@@ -35,17 +39,20 @@ func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error)
 }
 
 func RandomMessage(message string, ctx *model.AppContext) (string, error) {
+	contextMessage := createNewMessage(model.SystemRoleName, systemContextMessage)
 	newMessage := createNewMessage(model.UserRoleName, message)
-	messages := []model.Message{newMessage}
+	messages := []model.Message{contextMessage, newMessage}
 
 	response, err := Message(messages, model.RandomDialogId, ctx)
 	if err != nil {
 		return "", err
 	}
-	return response[1].Content, nil
+	return response[len(response)-1].Content, nil
 }
 
 func Message(messages []model.Message, dialogId string, ctx *model.AppContext) ([]model.Message, error) {
+	contextMessage := createNewMessage(model.SystemRoleName, systemContextMessage)
+	messages = append([]model.Message{contextMessage}, messages...)
 	requestBody, err := prepareGPT4RequestBody(messages, ModelGPT4)
 	if err != nil {
 		return nil, err
