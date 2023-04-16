@@ -172,6 +172,11 @@ func fileFlags() []cli.Flag {
 			Aliases: []string{"r"},
 			Usage:   "refactor file by applying best practices",
 		},
+		&cli.BoolFlag{
+			Name:    "explain",
+			Aliases: []string{"e"},
+			Usage:   "explain to me what is going on here",
+		},
 	}
 }
 
@@ -180,8 +185,11 @@ func handleFileAction(apiKeyFilePath *string) func(c *cli.Context) error {
 		filePath := c.String("input")
 		prompt := c.String("prompt")
 		refactor := c.Bool("refactor")
+		explain := c.Bool("explain")
 		if refactor {
 			prompt = "Refactor following file, extract code, de-duplicate, apply all best practices that you can think off that would be valuable here and would improve readability"
+		} else if explain {
+			prompt = "Please explain to me in simple words what this code do, on the high level what you think it is doing and per public method/class/function, whatvere you can to help me to understand it better"
 		}
 		ctx, err := initContext(*apiKeyFilePath)
 		if err != nil {
