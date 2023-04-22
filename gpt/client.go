@@ -16,9 +16,9 @@ import (
 const systemContextMessage = "Your name is: Jess. You are an AI developer assistant who helps with software development."
 
 func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error) {
-	contextMessage := createNewMessage(model.SystemRoleName, systemContextMessage)
+	contextMessage := CreateNewMessage(model.SystemRoleName, systemContextMessage, messages[0].DialogId)
 	messages = append([]model.Message{contextMessage}, messages...)
-	newMessage := createNewMessage(model.SystemRoleName, "Based on the last response from the user, is this dialog over? Please respond with true/false only")
+	newMessage := CreateNewMessage(model.SystemRoleName, "Based on the last response from the user, is this dialog over? Please respond with true/false only", messages[0].DialogId)
 	messages = append(messages, newMessage)
 
 	requestBody, err := prepareGPT4RequestBody(messages, ModelGPT3Turbo)
@@ -39,8 +39,8 @@ func IsDialogOver(messages []model.Message, ctx *model.AppContext) (bool, error)
 }
 
 func RandomMessage(message string, ctx *model.AppContext) (string, error) {
-	contextMessage := createNewMessage(model.SystemRoleName, systemContextMessage)
-	newMessage := createNewMessage(model.UserRoleName, message)
+	contextMessage := CreateNewMessage(model.SystemRoleName, systemContextMessage, model.RandomDialogId)
+	newMessage := CreateNewMessage(model.UserRoleName, message, model.RandomDialogId)
 	messages := []model.Message{contextMessage, newMessage}
 
 	response, err := Message(messages, model.RandomDialogId, ctx)
@@ -51,7 +51,7 @@ func RandomMessage(message string, ctx *model.AppContext) (string, error) {
 }
 
 func Message(messages []model.Message, dialogId string, ctx *model.AppContext) ([]model.Message, error) {
-	contextMessage := createNewMessage(model.SystemRoleName, systemContextMessage)
+	contextMessage := CreateNewMessage(model.SystemRoleName, systemContextMessage, dialogId)
 	messages = append([]model.Message{contextMessage}, messages...)
 	requestBody, err := prepareGPT4RequestBody(messages, ModelGPT4)
 	if err != nil {
@@ -66,13 +66,13 @@ func Message(messages []model.Message, dialogId string, ctx *model.AppContext) (
 	return addGPT4Response(response, messages, dialogId)
 }
 
-func createNewMessage(role, content string) model.Message {
+func CreateNewMessage(role, content string, dialogId string) model.Message {
 	uuidMsg, _ := uuid.NewUUID()
 	idMsg := uuidMsg.String()
 
 	return model.Message{
 		ID:        idMsg,
-		DialogId:  "",
+		DialogId:  dialogId,
 		Timestamp: time.Now(),
 		Role:      role,
 		Content:   content,
@@ -109,7 +109,7 @@ func sendGPTRequest(requestBody []byte, ctx *model.AppContext) (*GptChatCompleti
 
 func addGPT4Response(response *GptChatCompletionMessage, messages []model.Message, dialogId string) ([]model.Message, error) {
 	gpt4Text := response.Choices[0].Message.Content
-	newMessage := createNewMessage(model.AssistentRoleNeam, gpt4Text)
+	newMessage := CreateNewMessage(model.AssistentRoleNeam, gpt4Text, dialogId)
 	newMessage.DialogId = dialogId
 	messages = append(messages, newMessage)
 

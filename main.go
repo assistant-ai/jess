@@ -11,6 +11,7 @@ import (
 	"github.com/assistent-ai/client/db"
 	"github.com/assistent-ai/client/gpt"
 	"github.com/assistent-ai/client/model"
+	"github.com/assistent-ai/client/prompt"
 	"github.com/urfave/cli/v2"
 )
 
@@ -53,6 +54,7 @@ func defineGlobalFlags(apiKeyFilePath *string, defaultFilePath string) []cli.Fla
 func defineCommands(apiKeyFilePath *string) []*cli.Command {
 	return []*cli.Command{
 		defineDialogCommand(apiKeyFilePath),
+		defineProcessCommand(apiKeyFilePath),
 		defineFileCommand(apiKeyFilePath),
 	}
 }
@@ -66,11 +68,64 @@ func defineDialogCommand(apiKeyFilePath *string) *cli.Command {
 	}
 }
 
+func defineProcessCommand(apiKeyFilePath *string) *cli.Command {
+	return &cli.Command{
+		Name:   "process",
+		Usage:  "Do the process actions",
+		Action: handleProcessAction(apiKeyFilePath),
+		Flags:  processFlags(),
+	}
+}
+
+func handleProcessAction(apiKeyFilePath *string) func(c *cli.Context) error {
+	return func(c *cli.Context) error {
+		filePaths := c.StringSlice("input")
+		userPrompt := c.String("prompt")
+		context := c.String("context")
+		output := c.String("output")
+		ctx, err := initContext(*apiKeyFilePath)
+		if err != nil {
+			return err
+		}
+		finalPrompt, err := prompt.GenerateMultiFileProcessPrompt(filePaths, userPrompt)
+		if err != nil {
+			return err
+		}
+		messages := make([]model.Message, 0)
+		if context != "" {
+			messages, err = db.GetMessagesByDialogID(context)
+			if err != nil {
+				return err
+			}
+			messages = append(messages, gpt.CreateNewMessage(model.UserRoleName, finalPrompt, context))
+		} else {
+			messages = append(messages, gpt.CreateNewMessage(model.UserRoleName, finalPrompt, model.RandomDialogId))
+		}
+		quit := make(chan bool)
+		go jess_cli.AnimateThinking(quit)
+		answers, err := gpt.Message(messages, context, ctx)
+		if err != nil {
+			return err
+		}
+		answer := answers[len(answers)-1].Content
+		quit <- true
+		if output != "" {
+			err = os.WriteFile(output, []byte(answer), 0644)
+			if err != nil {
+				return err
+			}
+		} else {
+			fmt.Println("\n\n" + answer)
+		}
+		return nil
+	}
+}
+
 func handleDialogAction(apiKeyFilePath *string) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		if c.Bool("list") {
 			handleDialogList()
-		} else if id := c.String("continue"); id != "" {
+		} else if id := c.String("context"); id != "" {
 			handleDialogContinue(id, apiKeyFilePath)
 		} else if id := c.String("show"); id != "" {
 			handleDialogShow(id)
@@ -83,6 +138,31 @@ func handleDialogAction(apiKeyFilePath *string) func(c *cli.Context) error {
 	}
 }
 
+func processFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:    "prompt",
+			Aliases: []string{"p"},
+			Usage:   "prompt to suppy with file",
+		},
+		&cli.StringSliceFlag{
+			Name:    "input",
+			Aliases: []string{"i"},
+			Usage:   "input files",
+		},
+		&cli.StringFlag{
+			Name:    "context",
+			Aliases: []string{"c"},
+			Usage:   "context id to store this to",
+		},
+		&cli.StringFlag{
+			Name:    "output",
+			Aliases: []string{"o"},
+			Usage:   "output file path, if not specificed stdout will be used",
+		},
+	}
+}
+
 func dialogFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.BoolFlag{
@@ -91,19 +171,19 @@ func dialogFlags() []cli.Flag {
 			Usage:   "list all dialogs",
 		},
 		&cli.StringFlag{
-			Name:    "continue",
+			Name:    "context",
 			Aliases: []string{"c"},
-			Usage:   "continue dialog with the id",
+			Usage:   "continue dialog with the contextn id",
 		},
 		&cli.StringFlag{
 			Name:    "show",
 			Aliases: []string{"s"},
-			Usage:   "show dialog with the id",
+			Usage:   "show dialog with the context id",
 		},
 		&cli.StringFlag{
 			Name:    "delete",
 			Aliases: []string{"d"},
-			Usage:   "delete dialog with the id",
+			Usage:   "delete dialog with the context id",
 		},
 	}
 }
