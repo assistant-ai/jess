@@ -6,6 +6,8 @@ Jessica (Jess) is a program that helps developers to develop code and acts as a 
 * Usual dialogs with Jess (GPT4)
 
 ## Usage
+* Goto https://platform.openai.com/account/api-keys and create a new secret key.
+* create a file `.open-ai.key` under $HOME dir and copy the value of secret key generated in previous step.
 
 ### Generic Dialog
 
