@@ -8,10 +8,10 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/assistent-ai/client/db"
-	"github.com/assistent-ai/client/gpt"
-	"github.com/assistent-ai/client/model"
-	"github.com/assistent-ai/client/utils"
+	"github.com/assistent-ai/jess/db"
+	"github.com/assistent-ai/jess/gpt"
+	"github.com/assistent-ai/jess/model"
+	"github.com/assistent-ai/jess/utils"
 	"github.com/google/uuid"
 )
 

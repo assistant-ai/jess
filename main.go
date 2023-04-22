@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	jess_cli "github.com/assistent-ai/client/cli"
-	"github.com/assistent-ai/client/db"
-	"github.com/assistent-ai/client/gpt"
-	"github.com/assistent-ai/client/model"
-	"github.com/assistent-ai/client/prompt"
+	jess_cli "github.com/assistant-ai/jess/cli"
+	"github.com/assistant-ai/jess/db"
+	"github.com/assistant-ai/jess/gpt"
+	"github.com/assistant-ai/jess/model"
+	"github.com/assistant-ai/jess/prompt"
 	"github.com/urfave/cli/v2"
 )
 
@@ -55,7 +55,7 @@ func defineCommands(apiKeyFilePath *string) []*cli.Command {
 	return []*cli.Command{
 		defineDialogCommand(apiKeyFilePath),
 		defineProcessCommand(apiKeyFilePath),
-		defineFileCommand(apiKeyFilePath),
+		defineCodeCommand(apiKeyFilePath),
 	}
 }
 
@@ -225,16 +225,105 @@ func handleDialogDelete(id string) {
 	}
 }
 
-func defineFileCommand(apiKeyFilePath *string) *cli.Command {
+func defineCodeCommand(apiKeyFilePath *string) *cli.Command {
 	return &cli.Command{
-		Name:   "file",
-		Usage:  "Process file input",
-		Flags:  fileFlags(),
+		Name:  "code",
+		Usage: "Apply GPT suggestions",
+		Subcommands: []*cli.Command{
+			&cli.Command{
+				Name:   "apply",
+				Usage:  "Apply suggestions from GPT",
+				Action: handleCodeApplyAction(apiKeyFilePath),
+				Flags:  applyFlags(),
+			},
+		},
+	}
+}
+
+func handleCodeApplyAction(apiKeyFilePath *string) func(c *cli.Context) error {
+	return func(c *cli.Context) error {
+		filePath := c.String("input")
+		ctx, err := initContext(*apiKeyFilePath)
+		if err != nil {
+			return err
+		}
+
+		fileContent, err := os.ReadFile(filePath)
+		if err != nil {
+			return err
+		}
+
+		cwd, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+
+		var fileList []string
+
+		err = filepath.Walk(cwd, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			// Skip directories
+			if info.IsDir() {
+				return nil
+			}
+
+			// Ignore hidden files
+			if strings.Contains(path, ".git") {
+				return nil
+			}
+
+			// Append the relative path
+			relPath, _ := filepath.Rel(cwd, path)
+			fileList = append(fileList, relPath)
+			return nil
+		})
+
+		if err != nil {
+			panic(err)
+		}
+
+		// Print the list of files
+		// fmt.Printf("Here is the list of files:\n%s\n", strings.Join(fileList, "\n"))
+
+		gptPrompt := fmt.Sprintf("Here is the content of the input file:\n---\n%s\n---\nHere is the list of files I see around:\n---\n%s\n---\nWhat would be the next step to take to implement this? In your answer first line should be one of the following: show, file or unknow. Show means that you need to see specific file(s) in order to make actions. In this case next line(s) should be list of files you need to see to do the action. file means that you can apply action to files and next line should be file content that you created with the applied changes. Unknown means that you can not express next steps with show or file commands. Next like in this case should show why it is not possible to do it.", string(fileContent), strings.Join(fileList, "\n"))
+		// fmt.Println(gptPrompt)
+		// // for {
+		answer, err := gpt.RandomMessage(gptPrompt, ctx)
+		if err != nil {
+			return err
+		}
+		fmt.Println(answer)
+		// // Parse GPT's response and take appropriate actions
+
+		// // }
+		return nil
+	}
+}
+
+func defineApplyCommand(apiKeyFilePath *string) *cli.Command {
+	return &cli.Command{
+		Name:   "apply",
+		Usage:  "apply chaing of thoughts",
+		Flags:  applyFlags(),
 		Action: handleFileAction(apiKeyFilePath),
 	}
 }
 
-func fileFlags() []cli.Flag {
+func applyFlags() []cli.Flag {
+	return []cli.Flag{
+		&cli.StringFlag{
+			Name:     "input",
+			Aliases:  []string{"i"},
+			Usage:    "path to input file",
+			Required: true,
+		},
+	}
+}
+
+func codeFlags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:     "input",

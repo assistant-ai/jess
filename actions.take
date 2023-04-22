@@ -1,0 +1,24 @@
+After analyzing the provided code, I have several suggestions to refactor the code and improve its readability, organization, and maintainability.
+
+1. Split the main package into smaller packages: The `main.go` file contains many functions and commands definition. It would be better to separate it into smaller sub-packages with dedicated components. For example,
+
+  - Split the commands definition into separate files under `cmd` package.
+  - Move helper functions related to handling specific commands like handleDialogAction and handleProcessAction, into separate files under corresponding package.
+
+2. Add comments and documentation: Adding comments and documentation to functions and components will greatly help other developers understand the purpose of each part of the codebase.
+
+3. Use better naming conventions:
+
+    - Some variable names are not very descriptive, which may affect comprehension. Variables like cliFlag, ctx could be named more descriptively.
+
+4. Error handling improvements:
+
+    - Some functions use `cli.Exit(err, 1)` for error handling; it is better to have a mechanism that handles and reports errors centrally, allowing you to log errors or show a custom error message only once.
+
+5. Implement dependency injection: Pass required dependencies as arguments to the functions instead of using global variables or accessing package-level variables. This will make your code more modular, testable, and maintainable.
+
+6. Add tests: Add unit tests for your functions to ensure that the code works as expected, even while refactoring the codebase.
+
+7. Restructure folder layout: Consider organizing your code files in a more structured manner, e.g., separate the files under folders based on functionality, like `utils`, `chat`, `prompt`, `gpt`, etc.
+
+By implementing these changes, the codebase will be more organized, maintainable, and easier to understand. Remember to test the functionality of the CLI after making these changes to ensure it works as expected.

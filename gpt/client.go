@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/assistent-ai/client/model"
+	"github.com/assistant-ai/jess/model"
 	"github.com/google/uuid"
 )
 

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/assistent-ai/client/model"
+	"github.com/assistant-ai/jess/model"
 )
 
 func TrimMessages(messages []model.Message, maxUserMessagesSize int) []model.Message {
