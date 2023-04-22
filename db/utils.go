@@ -5,7 +5,7 @@ import (
 	"log"
 	"path/filepath"
 
-	"github.com/assistent-ai/jess/model"
+	"github.com/assistant-ai/jess/model"
 	"github.com/google/uuid"
 
 	"github.com/b0noi/go-utils/v2/fs"
