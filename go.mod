@@ -1,4 +1,4 @@
-module github.com/assistant-ai/client
+module github.com/assistant-ai/jess
 
 go 1.16
 
