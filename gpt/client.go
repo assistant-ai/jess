@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/assistant-ai/jess/db"
 	"github.com/assistant-ai/jess/model"
 	"github.com/google/uuid"
 )
@@ -48,6 +49,24 @@ func RandomMessage(message string, ctx *model.AppContext) (string, error) {
 		return "", err
 	}
 	return response[len(response)-1].Content, nil
+}
+
+func SendStringMessage(text string, dialogId string, ctx *model.AppContext) (string, error) {
+	messages := make([]model.Message, 0)
+	if dialogId != "" {
+		messages, err := db.GetMessagesByDialogID(dialogId)
+		if err != nil {
+			return "", err
+		}
+		messages = append(messages, CreateNewMessage(model.UserRoleName, text, dialogId))
+	} else {
+		messages = append(messages, CreateNewMessage(model.UserRoleName, text, model.RandomDialogId))
+	}
+	answers, err := Message(messages, dialogId, ctx)
+	if err != nil {
+		return "", err
+	}
+	return answers[len(answers)-1].Content, nil
 }
 
 func Message(messages []model.Message, dialogId string, ctx *model.AppContext) ([]model.Message, error) {

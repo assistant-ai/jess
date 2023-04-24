@@ -11,52 +11,51 @@ import (
 	"github.com/assistant-ai/jess/db"
 	"github.com/assistant-ai/jess/gpt"
 	"github.com/assistant-ai/jess/model"
-	"github.com/assistant-ai/jess/prompt"
 	"github.com/urfave/cli/v2"
 )
 
 var version = "unknown"
 
 func main() {
-	apiKeyFilePath := ""
-	defaultFilePath := filepath.Join(os.Getenv("HOME"), ".open-ai.key")
-	app := setupApp(&apiKeyFilePath, defaultFilePath)
-
-	err := app.Run(os.Args)
+	apiKeyFilePath := filepath.Join(os.Getenv("HOME"), ".open-ai.key")
+	app, err := setupApp(&apiKeyFilePath)
 	if err != nil {
 		cli.Exit(err, 1)
+		panic(err)
+	}
+
+	err = app.Run(os.Args)
+	if err != nil {
+		cli.Exit(err, 1)
+		panic(err)
 	}
 }
 
-func setupApp(apiKeyFilePath *string, defaultFilePath string) *cli.App {
+func setupApp(apiKeyFilePath *string) (*cli.App, error) {
 	app := cli.NewApp()
 	app.Name = "jessica"
 	app.Usage = "Jessica is an AI assistent."
 	app.Version = version
-	app.Flags = defineGlobalFlags(apiKeyFilePath, defaultFilePath)
 
-	app.Commands = defineCommands(apiKeyFilePath)
-
-	return app
-}
-
-func defineGlobalFlags(apiKeyFilePath *string, defaultFilePath string) []cli.Flag {
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name:        "key-file",
-			Value:       defaultFilePath,
-			Usage:       "Path to the text file containing the API key",
-			Destination: apiKeyFilePath,
-		},
+	commands, err := defineCommands(apiKeyFilePath)
+	if err != nil {
+		return nil, err
 	}
+	app.Commands = commands
+
+	return app, nil
 }
 
-func defineCommands(apiKeyFilePath *string) []*cli.Command {
+func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
+	ctx, err := initContext(*apiKeyFilePath)
+	if err != nil {
+		return nil, err
+	}
 	return []*cli.Command{
 		defineDialogCommand(apiKeyFilePath),
-		defineProcessCommand(apiKeyFilePath),
-		defineCodeCommand(apiKeyFilePath),
-	}
+		jess_cli.DefineProcessCommand(ctx),
+		defineCodeCommand(ctx),
+	}, nil
 }
 
 func defineDialogCommand(apiKeyFilePath *string) *cli.Command {
@@ -65,59 +64,6 @@ func defineDialogCommand(apiKeyFilePath *string) *cli.Command {
 		Usage:  "Manage dialogs",
 		Action: handleDialogAction(apiKeyFilePath),
 		Flags:  dialogFlags(),
-	}
-}
-
-func defineProcessCommand(apiKeyFilePath *string) *cli.Command {
-	return &cli.Command{
-		Name:   "process",
-		Usage:  "Do the process actions",
-		Action: handleProcessAction(apiKeyFilePath),
-		Flags:  processFlags(),
-	}
-}
-
-func handleProcessAction(apiKeyFilePath *string) func(c *cli.Context) error {
-	return func(c *cli.Context) error {
-		filePaths := c.StringSlice("input")
-		userPrompt := c.String("prompt")
-		context := c.String("context")
-		output := c.String("output")
-		ctx, err := initContext(*apiKeyFilePath)
-		if err != nil {
-			return err
-		}
-		finalPrompt, err := prompt.GenerateMultiFileProcessPrompt(filePaths, userPrompt)
-		if err != nil {
-			return err
-		}
-		messages := make([]model.Message, 0)
-		if context != "" {
-			messages, err = db.GetMessagesByDialogID(context)
-			if err != nil {
-				return err
-			}
-			messages = append(messages, gpt.CreateNewMessage(model.UserRoleName, finalPrompt, context))
-		} else {
-			messages = append(messages, gpt.CreateNewMessage(model.UserRoleName, finalPrompt, model.RandomDialogId))
-		}
-		quit := make(chan bool)
-		go jess_cli.AnimateThinking(quit)
-		answers, err := gpt.Message(messages, context, ctx)
-		if err != nil {
-			return err
-		}
-		answer := answers[len(answers)-1].Content
-		quit <- true
-		if output != "" {
-			err = os.WriteFile(output, []byte(answer), 0644)
-			if err != nil {
-				return err
-			}
-		} else {
-			fmt.Println("\n\n" + answer)
-		}
-		return nil
 	}
 }
 
@@ -135,31 +81,6 @@ func handleDialogAction(apiKeyFilePath *string) func(c *cli.Context) error {
 			return errors.New("no required key provided")
 		}
 		return nil
-	}
-}
-
-func processFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name:    "prompt",
-			Aliases: []string{"p"},
-			Usage:   "prompt to suppy with file",
-		},
-		&cli.StringSliceFlag{
-			Name:    "input",
-			Aliases: []string{"i"},
-			Usage:   "input files",
-		},
-		&cli.StringFlag{
-			Name:    "context",
-			Aliases: []string{"c"},
-			Usage:   "context id to store this to",
-		},
-		&cli.StringFlag{
-			Name:    "output",
-			Aliases: []string{"o"},
-			Usage:   "output file path, if not specificed stdout will be used",
-		},
 	}
 }
 
@@ -225,17 +146,13 @@ func handleDialogDelete(id string) {
 	}
 }
 
-func defineCodeCommand(apiKeyFilePath *string) *cli.Command {
+func defineCodeCommand(ctx *model.AppContext) *cli.Command {
 	return &cli.Command{
 		Name:  "code",
-		Usage: "Apply GPT suggestions",
+		Usage: "Actions to take with code",
 		Subcommands: []*cli.Command{
-			&cli.Command{
-				Name:   "apply",
-				Usage:  "Apply suggestions from GPT",
-				Action: handleCodeApplyAction(apiKeyFilePath),
-				Flags:  applyFlags(),
-			},
+			jess_cli.DefineQuestionCommand(ctx),
+			jess_cli.DefineExplainCommand(ctx),
 		},
 	}
 }
