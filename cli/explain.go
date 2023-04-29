@@ -3,17 +3,16 @@ package cli
 import (
 	"fmt"
 
-	"github.com/assistant-ai/jess/gpt"
-	"github.com/assistant-ai/jess/model"
 	"github.com/assistant-ai/jess/prompt"
+	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
 
-func DefineExplainCommand(ctx *model.AppContext) *cli.Command {
+func DefineExplainCommand(gpt *gpt.GptClient) *cli.Command {
 	return &cli.Command{
 		Name:   "explain",
 		Usage:  "Explain the code",
-		Action: handleExplainAction(ctx),
+		Action: handleExplainAction(gpt),
 		Flags:  explainFlags(),
 	}
 }
@@ -33,7 +32,7 @@ func explainFlags() []cli.Flag {
 	}
 }
 
-func handleExplainAction(ctx *model.AppContext) func(c *cli.Context) error {
+func handleExplainAction(gpt *gpt.GptClient) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		filePaths := c.StringSlice("input")
 		context := c.String("context")
@@ -43,7 +42,7 @@ func handleExplainAction(ctx *model.AppContext) func(c *cli.Context) error {
 		}
 		quit := make(chan bool)
 		go AnimateThinking(quit)
-		answer, err := gpt.SendStringMessage(finalPrompt, context, ctx)
+		answer, err := gpt.SendMessage(finalPrompt, context)
 		quit <- true
 		if err != nil {
 			return err

@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/assistant-ai/jess/gpt"
-	"github.com/assistant-ai/jess/model"
 	"github.com/assistant-ai/jess/prompt"
+	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
 
-func DefineProcessCommand(ctx *model.AppContext) *cli.Command {
+func DefineProcessCommand(gpt *gpt.GptClient) *cli.Command {
 	return &cli.Command{
 		Name:   "process",
 		Usage:  "Do the process actions",
-		Action: HandleProcessAction(ctx),
+		Action: HandleProcessAction(gpt),
 		Flags:  ProcessFlags(),
 	}
 }
@@ -44,7 +43,7 @@ func ProcessFlags() []cli.Flag {
 	}
 }
 
-func HandleProcessAction(ctx *model.AppContext) func(c *cli.Context) error {
+func HandleProcessAction(gpt *gpt.GptClient) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		filePaths := c.StringSlice("input")
 		userPrompt := c.String("prompt")
@@ -56,7 +55,7 @@ func HandleProcessAction(ctx *model.AppContext) func(c *cli.Context) error {
 		}
 		quit := make(chan bool)
 		go AnimateThinking(quit)
-		answer, err := gpt.SendStringMessage(finalPrompt, context, ctx)
+		answer, err := gpt.SendMessage(finalPrompt, context)
 		quit <- true
 		if err != nil {
 			return err

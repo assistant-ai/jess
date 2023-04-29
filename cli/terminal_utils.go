@@ -6,15 +6,15 @@ import (
 	"text/tabwriter"
 )
 
-func PrintDialogIDs(dialogs []string) {
+func PrintContextIDs(contextIds []string) {
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
 
 	fmt.Fprintln(w, "+-----------+")
-	fmt.Fprintln(w, "| Dialog ID\t|")
+	fmt.Fprintln(w, "| Context ID\t|")
 
-	for _, dialog := range dialogs {
-		fmt.Fprintf(w, "| %s\t|\n", dialog)
+	for _, contextId := range contextIds {
+		fmt.Fprintf(w, "| %s\t|\n", contextId)
 	}
 	fmt.Fprintln(w, "+-----------+")
 

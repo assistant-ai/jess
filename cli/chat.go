@@ -8,11 +8,9 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/assistant-ai/jess/db"
-	"github.com/assistant-ai/jess/gpt"
 	"github.com/assistant-ai/jess/model"
-	"github.com/assistant-ai/jess/utils"
-	"github.com/google/uuid"
+	"github.com/assistant-ai/llmchat-client/db"
+	"github.com/assistant-ai/llmchat-client/gpt"
 )
 
 func AnimateThinking(quit chan bool) {
@@ -49,79 +47,54 @@ func generatePrompt(input model.FileInput, tmplFile string) (string, error) {
 	return output.String(), nil
 }
 
-func ShowMessages(messages []model.Message) {
+func ShowMessages(messages []db.Message) {
 	for _, message := range messages {
 		formattedTimestamp := message.Timestamp.Format(model.TimestampFormattingTemplate)
 		fmt.Printf("[%s] %s: %s\n", formattedTimestamp, message.Role, message.Content)
 	}
 }
 
-func readNewMessage(scanner *bufio.Scanner, dialogId string) (model.Message, error) {
+func readNewMessage(scanner *bufio.Scanner) (string, error) {
 	fmt.Print("You: ")
 
 	if !scanner.Scan() {
-		return model.Message{}, fmt.Errorf("Error reading input")
+		return "", fmt.Errorf("Error reading input")
 	}
-	msgUUID, err := uuid.NewRandom()
-	if err != nil {
-		return model.Message{}, err
-	}
-	msgId := msgUUID.String()
-
-	return model.Message{
-		ID:        msgId,
-		DialogId:  dialogId,
-		Timestamp: time.Now(),
-		Role:      model.UserRoleName,
-		Content:   scanner.Text(),
-	}, nil
+	return scanner.Text(), nil
 }
 
-func StartChat(dialogId string, ctx *model.AppContext) error {
-	if dialogId == "" {
-		dialogId = model.DefaultDialogId
-	}
+func StartChat(contextId string, gpt *gpt.GptClient) error {
 	quit := make(chan bool)
 
 	scanner := bufio.NewScanner(os.Stdin)
-	messages := make([]model.Message, 0)
-	if dialogId != model.RandomDialogId {
-		messages, err := db.GetMessagesByDialogID(dialogId)
-		if err != nil {
-			return err
-		}
-		ShowMessages(messages)
+	messages := make([]db.Message, 0)
+	messages, err := db.GetMessagesByContextID(contextId)
+	if err != nil {
+		return err
 	}
+	ShowMessages(messages)
 
 	for {
-		newMessage, err := readNewMessage(scanner, dialogId)
+		if !scanner.Scan() {
+			return fmt.Errorf("Error reading input")
+		}
+		newMessage := scanner.Text()
+		if newMessage == "end" {
+			break
+		}
 		if err != nil {
 			break
 		}
-
-		messages = append(messages, newMessage)
 		go AnimateThinking(quit)
 
-		over, err := gpt.IsDialogOver(messages, ctx)
-		if err != nil && over {
-			break
-		}
-		messages = utils.TrimMessages(messages, 8)
-		messages, err = gpt.Message(messages, dialogId, ctx)
+		response, err := gpt.SendMessage(newMessage, contextId)
 		if err != nil {
 			fmt.Printf("Error: %s\n", err)
 			continue
 		}
-		if _, err = db.StoreMessage(newMessage); err != nil {
-			return err
-		}
-		lastMessage := messages[len(messages)-1]
-		if _, err = db.StoreMessage(lastMessage); err != nil {
-			return err
-		}
 		quit <- true
 
-		fmt.Printf("\n\n\n%s: %s\n", lastMessage.Role, lastMessage.Content)
+		fmt.Printf("\n\n\nJess: %s\n\n\n", response)
 	}
 
 	fmt.Println("Goodbye!")

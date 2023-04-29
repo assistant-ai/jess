@@ -8,9 +8,9 @@ import (
 	"strings"
 
 	jess_cli "github.com/assistant-ai/jess/cli"
-	"github.com/assistant-ai/jess/db"
-	"github.com/assistant-ai/jess/gpt"
 	"github.com/assistant-ai/jess/model"
+	"github.com/assistant-ai/llmchat-client/db"
+	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
 
@@ -47,7 +47,7 @@ func setupApp(apiKeyFilePath *string) (*cli.App, error) {
 }
 
 func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
-	ctx, err := initContext(*apiKeyFilePath)
+	ctx, err := initGptClient(*apiKeyFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -110,17 +110,17 @@ func dialogFlags() []cli.Flag {
 }
 
 func handleDialogList() {
-	dialogIds, err := db.GetDialogIDs()
+	contextIds, err := db.GetContextIDs()
 	if err != nil {
 		cli.Exit(err, 1)
 	} else {
-		jess_cli.PrintDialogIDs(dialogIds)
+		jess_cli.PrintContextIDs(contextIds)
 	}
 }
 
 func handleDialogContinue(id string, apiKeyFilePath *string) {
 	fmt.Println("Starting a new conversation...")
-	ctx, err := initContext(*apiKeyFilePath)
+	ctx, err := initGptClient(*apiKeyFilePath)
 	if err != nil {
 		cli.Exit(err, 1)
 	}
@@ -131,7 +131,7 @@ func handleDialogContinue(id string, apiKeyFilePath *string) {
 }
 
 func handleDialogShow(id string) {
-	messages, err := db.GetMessagesByDialogID(id)
+	messages, err := db.GetMessagesByContextID(id)
 	if err != nil {
 		cli.Exit(err, 1)
 	} else {
@@ -140,19 +140,19 @@ func handleDialogShow(id string) {
 }
 
 func handleDialogDelete(id string) {
-	err := db.RemoveMessagesByDialogId(id)
+	err := db.RemoveContext(id)
 	if err != nil {
 		cli.Exit(err, 1)
 	}
 }
 
-func defineCodeCommand(ctx *model.AppContext) *cli.Command {
+func defineCodeCommand(gpt *gpt.GptClient) *cli.Command {
 	return &cli.Command{
 		Name:  "code",
 		Usage: "Actions to take with code",
 		Subcommands: []*cli.Command{
-			jess_cli.DefineQuestionCommand(ctx),
-			jess_cli.DefineExplainCommand(ctx),
+			jess_cli.DefineQuestionCommand(gpt),
+			jess_cli.DefineExplainCommand(gpt),
 		},
 	}
 }
@@ -160,7 +160,7 @@ func defineCodeCommand(ctx *model.AppContext) *cli.Command {
 func handleCodeApplyAction(apiKeyFilePath *string) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		filePath := c.String("input")
-		ctx, err := initContext(*apiKeyFilePath)
+		gpt, err := initGptClient(*apiKeyFilePath)
 		if err != nil {
 			return err
 		}
@@ -208,7 +208,7 @@ func handleCodeApplyAction(apiKeyFilePath *string) func(c *cli.Context) error {
 		gptPrompt := fmt.Sprintf("Here is the content of the input file:\n---\n%s\n---\nHere is the list of files I see around:\n---\n%s\n---\nWhat would be the next step to take to implement this? In your answer first line should be one of the following: show, file or unknow. Show means that you need to see specific file(s) in order to make actions. In this case next line(s) should be list of files you need to see to do the action. file means that you can apply action to files and next line should be file content that you created with the applied changes. Unknown means that you can not express next steps with show or file commands. Next like in this case should show why it is not possible to do it.", string(fileContent), strings.Join(fileList, "\n"))
 		// fmt.Println(gptPrompt)
 		// // for {
-		answer, err := gpt.RandomMessage(gptPrompt, ctx)
+		answer, err := gpt.SendMessage(gptPrompt, "")
 		if err != nil {
 			return err
 		}
@@ -283,7 +283,7 @@ func handleFileAction(apiKeyFilePath *string) func(c *cli.Context) error {
 		} else if explain {
 			prompt = "Please explain to me in simple words what this code do, on the high level what you think it is doing and per public method/class/function, whatvere you can to help me to understand it better"
 		}
-		ctx, err := initContext(*apiKeyFilePath)
+		gpt, err := initGptClient(*apiKeyFilePath)
 		if err != nil {
 			return err
 		}
@@ -301,7 +301,7 @@ func handleFileAction(apiKeyFilePath *string) func(c *cli.Context) error {
 		}
 		quit := make(chan bool)
 		go jess_cli.AnimateThinking(quit)
-		answer, err := gpt.RandomMessage(gptPrompt, ctx)
+		answer, err := gpt.SendMessage(gptPrompt, "")
 		if err != nil {
 			return err
 		}
@@ -318,12 +318,12 @@ func handleFileAction(apiKeyFilePath *string) func(c *cli.Context) error {
 	}
 }
 
-func initContext(openAiKeyFilePath string) (*model.AppContext, error) {
+func initGptClient(openAiKeyFilePath string) (*gpt.GptClient, error) {
 	b, err := os.ReadFile(openAiKeyFilePath)
 	if err != nil {
 		return nil, err
 	}
-	return &model.AppContext{
-		OpenAiKey: strings.ReplaceAll(string(b), "\n", ""),
-	}, nil
+	client := gpt.NewDefaultGptClient(strings.ReplaceAll(string(b), "\n", ""))
+	client.DefaultContext = "Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only."
+	return client, nil
 }

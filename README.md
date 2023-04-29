@@ -24,7 +24,7 @@ To interact with Jess, use the following commands and flags:
 
 ### Coding Requests
 
-`jessica file`:
+`jess file`:
 
 * Read and process files
 * Flags:
