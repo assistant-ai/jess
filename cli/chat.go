@@ -75,6 +75,7 @@ func StartChat(contextId string, gpt *gpt.GptClient) error {
 	ShowMessages(messages)
 
 	for {
+		fmt.Print("You: ")
 		if !scanner.Scan() {
 			return fmt.Errorf("Error reading input")
 		}

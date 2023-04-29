@@ -538,6 +538,8 @@ github.com/assistant-ai/llmchat-client v0.0.0 h1:hMtN3xpCrVFDUVapeCjlRYz+JfSgNJL
 github.com/assistant-ai/llmchat-client v0.0.0/go.mod h1:fpaUAMco+QmtHazYg0tg64zFGMsLAWdwkSLfIYHWdSE=
 github.com/assistant-ai/llmchat-client v0.1.0 h1:gcwneu0ZumXzd3iq3a5ms5qKfvn/NfMCuS3K2X2n5dk=
 github.com/assistant-ai/llmchat-client v0.1.0/go.mod h1:fpaUAMco+QmtHazYg0tg64zFGMsLAWdwkSLfIYHWdSE=
+github.com/assistant-ai/llmchat-client v0.2.0 h1:CFhWb3hQCUHux8t1cYoAPwD/Mexb3eeUQ2zmyHeJpMs=
+github.com/assistant-ai/llmchat-client v0.2.0/go.mod h1:fpaUAMco+QmtHazYg0tg64zFGMsLAWdwkSLfIYHWdSE=
 github.com/b0noi/go-utils/v2 v2.2.0 h1:PLecFwV4xrzbB+KczH4pRZkXOqfXXog/YJV/P1iSeEA=
 github.com/b0noi/go-utils/v2 v2.2.0/go.mod h1:nSEucF2Gm9UV0nUkDrKwXq5twuU4L2/ObunPzKph8lU=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
