@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	jess_cli "github.com/assistant-ai/jess/cli"
+	"github.com/assistant-ai/jess/commands"
 	"github.com/assistant-ai/jess/model"
 	"github.com/assistant-ai/llmchat-client/db"
 	"github.com/assistant-ai/llmchat-client/gpt"
@@ -47,14 +48,17 @@ func setupApp(apiKeyFilePath *string) (*cli.App, error) {
 }
 
 func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
-	ctx, err := initGptClient(*apiKeyFilePath)
+	gpt, err := initGptClient(*apiKeyFilePath)
 	if err != nil {
 		return nil, err
 	}
+	processCommand := commands.JessCommand{
+		Command: &commands.ProcessCommand{},
+	}
 	return []*cli.Command{
 		defineDialogCommand(apiKeyFilePath),
-		jess_cli.DefineProcessCommand(ctx),
-		defineCodeCommand(ctx),
+		processCommand.DefineCommand(gpt),
+		defineCodeCommand(gpt),
 	}, nil
 }
 
@@ -147,11 +151,14 @@ func handleDialogDelete(id string) {
 }
 
 func defineCodeCommand(gpt *gpt.GptClient) *cli.Command {
+	questionCommand := commands.JessCommand{
+		Command: &commands.QuestionCommand{},
+	}
 	return &cli.Command{
 		Name:  "code",
 		Usage: "Actions to take with code",
 		Subcommands: []*cli.Command{
-			jess_cli.DefineQuestionCommand(gpt),
+			questionCommand.DefineCommand(gpt),
 			jess_cli.DefineExplainCommand(gpt),
 		},
 	}
@@ -324,6 +331,12 @@ func initGptClient(openAiKeyFilePath string) (*gpt.GptClient, error) {
 		return nil, err
 	}
 	client := gpt.NewDefaultGptClient(strings.ReplaceAll(string(b), "\n", ""))
-	client.DefaultContext = "Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only."
+	client.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
+	
+When replying, consider information gaps and ask for clarification if needed. 
+Limit this to avoid excess. 
+Decide when to answer directly. 
+Assume basic knowledge. 
+Concise over politeness.`
 	return client, nil
 }
