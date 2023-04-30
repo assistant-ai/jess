@@ -39,7 +39,7 @@ func (c *JessCommand) handleAction(gpt *gpt.GptClient) func(cliContext *cli.Cont
 		}
 		quit := make(chan bool)
 		go jess_cli.AnimateThinking(quit)
-		answer, err := gpt.SendMessage(finalPrompt, context)
+		answer, err := gpt.SendMessageWithContextDepth(finalPrompt, context, 0, false)
 		quit <- true
 		if err != nil {
 			return err

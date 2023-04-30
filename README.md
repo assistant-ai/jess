@@ -1,41 +1,73 @@
-Jessica (Jess) is a program that helps developers to develop code and acts as a co-developer(s). It is designed to assist in improving code, initiating dialogs, and more. Jess is built on GPT-4, thus having GPT-4 is a requirement for its proper functioning.
+# Jessica CLI
 
-## Features
+Jessica is an AI assistant for software developers to help them with their code by explaining, refactoring, and answering questions. It is primarily used as a Command Line Interface (CLI) tool.
 
-* Explain/improve/refactor the code
-* Usual dialogs with Jess (GPT4)
+## Installation
 
-## Usage
-* Goto https://platform.openai.com/account/api-keys and create a new secret key.
-* create a file `.open-ai.key` under $HOME dir and copy the value of secret key generated in previous step.
-
-### Generic Dialog
-
-To interact with Jess, use the following commands and flags:
-
-`jess dialog`:
-
-* Manage dialogs
-* Flags:
-  * `--list` or `-l`: list all dialogs
-  * `--continue ID` or `-c ID`: continue a dialog with the specified ID
-  * `--show ID` or `-s ID`: show a dialog with the specified ID
-  * `--delete ID` or `-d ID`: delete a dialog with the specified ID
-
-### Coding Requests
-
-`jess file`:
-
-* Read and process files
-* Flags:
-  * `--input PATH` or `-i PATH`: path to the input file to show to Jessica (required)
-  * `--prompt TEXT` or `-p TEXT`: prompt input to be passed along with the file
-  * `--refactor` or `-r`: suggest refactoring of the file by applying best practices
-
-You need to provide either prompt or refactor flag. If refactor flag set, prompt will be ignored.
-
-## Install
+To install, first, clone the repository and navigate to the project directory:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/assistant-ai/jess/master/install.sh | bash
 ```
+
+## Requirements
+
+- Golang >= 1.15
+- OpenAI API Key (stored in `~/.open-ai.key` file)
+
+## Features
+
+Jessica offers the following features:
+
+1. **Manage Dialog**: Start, continue, list, show, and delete conversations with the AI assistant.
+2. **Code Processing**: Perform various tasks such as:
+   - Explain: Describe the code in plain English.
+   - Refactor: Refactor the code following best practices.
+   - Answer Questions: Answer questions about the code with possible code examples.
+
+## Usage
+
+1. **Dialog management**
+
+   List all dialogs:
+   ```bash
+   jess dialog -l
+   ```
+
+   Continue dialog with context ID:
+   ```bash
+   jess dialog -c <context_id>
+   ```
+
+   Show dialog with context ID:
+   ```bash
+   jess dialog -s <context_id>
+   ```
+
+   Delete dialog with context ID:
+   ```bash
+   jess dialog -d <context_id>
+   ```
+
+2. **Code processing**
+
+   Explain code files in English:
+   ```bash
+   jess code explain -i <input_file1> -i <input_file2> -o <output_file>
+   ```
+
+   Refactor code file:
+   ```bash
+   jess code refactor -i <input_file> -o <output_file>
+   ```
+
+   Ask questions about code files:
+   ```bash
+   jess code question -p "Your question" -i <input_file1> -i <input_file2> -o <output_file>
+   ```
+
+Note: Replace `<input_file>` with the actual file paths and `<context_id>` with an actual context ID.
+
+## Contributing and Support
+
+Feel free to open issues, submit pull requests, or contact us if you need help.
