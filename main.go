@@ -9,7 +9,6 @@ import (
 
 	jess_cli "github.com/assistant-ai/jess/cli"
 	"github.com/assistant-ai/jess/commands"
-	"github.com/assistant-ai/jess/model"
 	"github.com/assistant-ai/llmchat-client/db"
 	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
@@ -154,174 +153,20 @@ func defineCodeCommand(gpt *gpt.GptClient) *cli.Command {
 	questionCommand := commands.JessCommand{
 		Command: &commands.QuestionCommand{},
 	}
+	explainCommand := commands.JessCommand{
+		Command: &commands.ExplainCommand{},
+	}
+	refactorCommand := commands.JessCommand{
+		Command: &commands.RefactorCommand{},
+	}
 	return &cli.Command{
 		Name:  "code",
 		Usage: "Actions to take with code",
 		Subcommands: []*cli.Command{
 			questionCommand.DefineCommand(gpt),
-			jess_cli.DefineExplainCommand(gpt),
+			explainCommand.DefineCommand(gpt),
+			refactorCommand.DefineCommand(gpt),
 		},
-	}
-}
-
-func handleCodeApplyAction(apiKeyFilePath *string) func(c *cli.Context) error {
-	return func(c *cli.Context) error {
-		filePath := c.String("input")
-		gpt, err := initGptClient(*apiKeyFilePath)
-		if err != nil {
-			return err
-		}
-
-		fileContent, err := os.ReadFile(filePath)
-		if err != nil {
-			return err
-		}
-
-		cwd, err := os.Getwd()
-		if err != nil {
-			panic(err)
-		}
-
-		var fileList []string
-
-		err = filepath.Walk(cwd, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			// Skip directories
-			if info.IsDir() {
-				return nil
-			}
-
-			// Ignore hidden files
-			if strings.Contains(path, ".git") {
-				return nil
-			}
-
-			// Append the relative path
-			relPath, _ := filepath.Rel(cwd, path)
-			fileList = append(fileList, relPath)
-			return nil
-		})
-
-		if err != nil {
-			panic(err)
-		}
-
-		// Print the list of files
-		// fmt.Printf("Here is the list of files:\n%s\n", strings.Join(fileList, "\n"))
-
-		gptPrompt := fmt.Sprintf("Here is the content of the input file:\n---\n%s\n---\nHere is the list of files I see around:\n---\n%s\n---\nWhat would be the next step to take to implement this? In your answer first line should be one of the following: show, file or unknow. Show means that you need to see specific file(s) in order to make actions. In this case next line(s) should be list of files you need to see to do the action. file means that you can apply action to files and next line should be file content that you created with the applied changes. Unknown means that you can not express next steps with show or file commands. Next like in this case should show why it is not possible to do it.", string(fileContent), strings.Join(fileList, "\n"))
-		// fmt.Println(gptPrompt)
-		// // for {
-		answer, err := gpt.SendMessage(gptPrompt, "")
-		if err != nil {
-			return err
-		}
-		fmt.Println(answer)
-		// // Parse GPT's response and take appropriate actions
-
-		// // }
-		return nil
-	}
-}
-
-func defineApplyCommand(apiKeyFilePath *string) *cli.Command {
-	return &cli.Command{
-		Name:   "apply",
-		Usage:  "apply chaing of thoughts",
-		Flags:  applyFlags(),
-		Action: handleFileAction(apiKeyFilePath),
-	}
-}
-
-func applyFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name:     "input",
-			Aliases:  []string{"i"},
-			Usage:    "path to input file",
-			Required: true,
-		},
-	}
-}
-
-func codeFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.StringFlag{
-			Name:     "input",
-			Aliases:  []string{"i"},
-			Usage:    "path to input file",
-			Required: true,
-		},
-		&cli.StringFlag{
-			Name:    "prompt",
-			Aliases: []string{"p"},
-			Usage:   "prompt input to pass with the file",
-		},
-		&cli.BoolFlag{
-			Name:    "refactor",
-			Aliases: []string{"r"},
-			Usage:   "refactor file by applying best practices",
-		},
-		&cli.BoolFlag{
-			Name:    "explain",
-			Aliases: []string{"e"},
-			Usage:   "explain to me what is going on here",
-		},
-		&cli.BoolFlag{
-			Name:    "override",
-			Aliases: []string{"o"},
-			Usage:   "write output in the same input file instead of stdout",
-		},
-	}
-}
-
-func handleFileAction(apiKeyFilePath *string) func(c *cli.Context) error {
-	return func(c *cli.Context) error {
-		filePath := c.String("input")
-		prompt := c.String("prompt")
-		refactor := c.Bool("refactor")
-		explain := c.Bool("explain")
-		override := c.Bool("override")
-		if refactor {
-			prompt = "Refactor following file, extract code, de-duplicate, apply all best practices that you can think off that would be valuable here and would improve readability"
-		} else if explain {
-			prompt = "Please explain to me in simple words what this code do, on the high level what you think it is doing and per public method/class/function, whatvere you can to help me to understand it better"
-		}
-		gpt, err := initGptClient(*apiKeyFilePath)
-		if err != nil {
-			return err
-		}
-		b, err := os.ReadFile(filePath)
-		if err != nil {
-			return err
-		}
-		input := model.FileInput{
-			UserMessage: prompt,
-			FileContent: string(b),
-		}
-		gptPrompt, err := jess_cli.GeneratePromptForFile(input)
-		if err != nil {
-			return err
-		}
-		quit := make(chan bool)
-		go jess_cli.AnimateThinking(quit)
-		answer, err := gpt.SendMessage(gptPrompt, "")
-		if err != nil {
-			return err
-		}
-		quit <- true
-		if override {
-			err = os.WriteFile(filePath, []byte(answer), 0644)
-			if err != nil {
-				return err
-			}
-		} else {
-			fmt.Println("\n\n" + answer)
-		}
-		return nil
 	}
 }
 
