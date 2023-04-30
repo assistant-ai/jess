@@ -19,16 +19,10 @@ var version = "unknown"
 func main() {
 	apiKeyFilePath := filepath.Join(os.Getenv("HOME"), ".open-ai.key")
 	app, err := setupApp(&apiKeyFilePath)
-	if err != nil {
-		cli.Exit(err, 1)
-		panic(err)
-	}
+	handleError(err)
 
 	err = app.Run(os.Args)
-	if err != nil {
-		cli.Exit(err, 1)
-		panic(err)
-	}
+	handleError(err)
 }
 
 func setupApp(apiKeyFilePath *string) (*cli.App, error) {
@@ -51,14 +45,18 @@ func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	processCommand := commands.JessCommand{
 		Command: &commands.ProcessCommand{},
 	}
-	return []*cli.Command{
+
+	commands := []*cli.Command{
 		defineDialogCommand(apiKeyFilePath),
 		processCommand.DefineCommand(gpt),
 		defineCodeCommand(gpt),
-	}, nil
+	}
+
+	return commands, nil
 }
 
 func defineDialogCommand(apiKeyFilePath *string) *cli.Command {
@@ -114,39 +112,30 @@ func dialogFlags() []cli.Flag {
 
 func handleDialogList() {
 	contextIds, err := db.GetContextIDs()
-	if err != nil {
-		cli.Exit(err, 1)
-	} else {
-		jess_cli.PrintContextIDs(contextIds)
-	}
+	handleError(err)
+
+	jess_cli.PrintContextIDs(contextIds)
 }
 
 func handleDialogContinue(id string, apiKeyFilePath *string) {
 	fmt.Println("Starting a new conversation...")
 	ctx, err := initGptClient(*apiKeyFilePath)
-	if err != nil {
-		cli.Exit(err, 1)
-	}
+	handleError(err)
+
 	err = jess_cli.StartChat(id, ctx)
-	if err != nil {
-		cli.Exit(err, 1)
-	}
+	handleError(err)
 }
 
 func handleDialogShow(id string) {
 	messages, err := db.GetMessagesByContextID(id)
-	if err != nil {
-		cli.Exit(err, 1)
-	} else {
-		jess_cli.ShowMessages(messages)
-	}
+	handleError(err)
+
+	jess_cli.ShowMessages(messages)
 }
 
 func handleDialogDelete(id string) {
 	err := db.RemoveContext(id)
-	if err != nil {
-		cli.Exit(err, 1)
-	}
+	handleError(err)
 }
 
 func defineCodeCommand(gpt *gpt.GptClient) *cli.Command {
@@ -177,11 +166,18 @@ func initGptClient(openAiKeyFilePath string) (*gpt.GptClient, error) {
 	}
 	client := gpt.NewDefaultGptClient(strings.ReplaceAll(string(b), "\n", ""))
 	client.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
-	
+
 When replying, consider information gaps and ask for clarification if needed. 
 Limit this to avoid excess. 
 Decide when to answer directly. 
 Assume basic knowledge. 
 Concise over politeness.`
 	return client, nil
+}
+
+func handleError(err error) {
+	if err != nil {
+		cli.Exit(err, 1)
+		panic(err)
+	}
 }

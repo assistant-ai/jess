@@ -17,7 +17,7 @@ func (c *RefactorCommand) Usage() string {
 
 func (c *RefactorCommand) Flags() []cli.Flag {
 	return []cli.Flag{
-		InputFilesFlag(),
+		InputFileFlag(),
 		ContextFlag(),
 		OutputFlag(),
 	}
