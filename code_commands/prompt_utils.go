@@ -1,4 +1,4 @@
-package commands
+package code_commands
 
 import (
 	"io/ioutil"

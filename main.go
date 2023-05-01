@@ -1,15 +1,13 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	jess_cli "github.com/assistant-ai/jess/cli"
-	"github.com/assistant-ai/jess/commands"
-	"github.com/assistant-ai/llmchat-client/db"
+	"github.com/assistant-ai/jess/code_commands"
+	"github.com/assistant-ai/jess/context_commands"
 	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
@@ -19,10 +17,10 @@ var version = "unknown"
 func main() {
 	apiKeyFilePath := filepath.Join(os.Getenv("HOME"), ".open-ai.key")
 	app, err := setupApp(&apiKeyFilePath)
-	handleError(err)
+	jess_cli.HandleError(err)
 
 	err = app.Run(os.Args)
-	handleError(err)
+	jess_cli.HandleError(err)
 }
 
 func setupApp(apiKeyFilePath *string) (*cli.App, error) {
@@ -46,12 +44,13 @@ func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
 		return nil, err
 	}
 
-	processCommand := commands.JessCommand{
-		Command: &commands.ProcessCommand{},
+	processCommand := code_commands.JessCommand{
+		Command: &code_commands.ProcessCommand{},
 	}
 
 	commands := []*cli.Command{
-		defineDialogCommand(apiKeyFilePath),
+		context_commands.DefineDialogCommand(gpt),
+		context_commands.DefineContextCommand(gpt),
 		processCommand.DefineCommand(gpt),
 		defineCodeCommand(gpt),
 	}
@@ -59,94 +58,15 @@ func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
 	return commands, nil
 }
 
-func defineDialogCommand(apiKeyFilePath *string) *cli.Command {
-	return &cli.Command{
-		Name:   "dialog",
-		Usage:  "Manage dialogs",
-		Action: handleDialogAction(apiKeyFilePath),
-		Flags:  dialogFlags(),
-	}
-}
-
-func handleDialogAction(apiKeyFilePath *string) func(c *cli.Context) error {
-	return func(c *cli.Context) error {
-		if c.Bool("list") {
-			handleDialogList()
-		} else if id := c.String("context"); id != "" {
-			handleDialogContinue(id, apiKeyFilePath)
-		} else if id := c.String("show"); id != "" {
-			handleDialogShow(id)
-		} else if id := c.String("delete"); id != "" {
-			handleDialogDelete(id)
-		} else {
-			return errors.New("no required key provided")
-		}
-		return nil
-	}
-}
-
-func dialogFlags() []cli.Flag {
-	return []cli.Flag{
-		&cli.BoolFlag{
-			Name:    "list",
-			Aliases: []string{"l"},
-			Usage:   "list all dialogs",
-		},
-		&cli.StringFlag{
-			Name:    "context",
-			Aliases: []string{"c"},
-			Usage:   "continue dialog with the contextn id",
-		},
-		&cli.StringFlag{
-			Name:    "show",
-			Aliases: []string{"s"},
-			Usage:   "show dialog with the context id",
-		},
-		&cli.StringFlag{
-			Name:    "delete",
-			Aliases: []string{"d"},
-			Usage:   "delete dialog with the context id",
-		},
-	}
-}
-
-func handleDialogList() {
-	contextIds, err := db.GetContextIDs()
-	handleError(err)
-
-	jess_cli.PrintContextIDs(contextIds)
-}
-
-func handleDialogContinue(id string, apiKeyFilePath *string) {
-	fmt.Println("Starting a new conversation...")
-	ctx, err := initGptClient(*apiKeyFilePath)
-	handleError(err)
-
-	err = jess_cli.StartChat(id, ctx)
-	handleError(err)
-}
-
-func handleDialogShow(id string) {
-	messages, err := db.GetMessagesByContextID(id)
-	handleError(err)
-
-	jess_cli.ShowMessages(messages)
-}
-
-func handleDialogDelete(id string) {
-	err := db.RemoveContext(id)
-	handleError(err)
-}
-
 func defineCodeCommand(gpt *gpt.GptClient) *cli.Command {
-	questionCommand := commands.JessCommand{
-		Command: &commands.QuestionCommand{},
+	questionCommand := code_commands.JessCommand{
+		Command: &code_commands.QuestionCommand{},
 	}
-	explainCommand := commands.JessCommand{
-		Command: &commands.ExplainCommand{},
+	explainCommand := code_commands.JessCommand{
+		Command: &code_commands.ExplainCommand{},
 	}
-	refactorCommand := commands.JessCommand{
-		Command: &commands.RefactorCommand{},
+	refactorCommand := code_commands.JessCommand{
+		Command: &code_commands.RefactorCommand{},
 	}
 	return &cli.Command{
 		Name:  "code",
@@ -173,11 +93,4 @@ Decide when to answer directly.
 Assume basic knowledge. 
 Concise over politeness.`
 	return client, nil
-}
-
-func handleError(err error) {
-	if err != nil {
-		cli.Exit(err, 1)
-		panic(err)
-	}
 }

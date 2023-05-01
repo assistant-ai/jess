@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"text/tabwriter"
+
+	"github.com/urfave/cli/v2"
 )
 
 func PrintContextIDs(contextIds []string) {
@@ -28,4 +30,11 @@ func PrintErrorAndExit(err error) {
 	fmt.Fprintln(os.Stderr, "Please check your input and try again.")
 	// Exit the program with a non-zero status code to indicate an error
 	os.Exit(1)
+}
+
+func HandleError(err error) {
+	if err != nil {
+		cli.Exit(err, 1)
+		panic(err)
+	}
 }
