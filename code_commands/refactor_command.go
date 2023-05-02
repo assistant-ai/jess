@@ -26,9 +26,10 @@ func (c *RefactorCommand) Flags() []cli.Flag {
 func (c *RefactorCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Context) (string, error) {
 	filePath := cliContext.String("input")
 	filePaths := []string{filePath}
+	urls := []string{}
 	prePrompt := "Let me show you code file."
 	userPrompt := "Please refactor it using the best practices of the language that is used. Ideally final verison should be as readable as possible. You can refactor any way you want as long as public APIs are no changed. Feel free to extract anything that is needed to a helper function/methods entities. Your final output should be full content of the file end-to-end without any text before/after, I will use your output and override my original file."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, userPrompt)
+	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urls, userPrompt)
 	if err != nil {
 		return "", err
 	}

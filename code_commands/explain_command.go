@@ -20,14 +20,16 @@ func (c *ExplainCommand) Flags() []cli.Flag {
 		InputFilesFlag(),
 		ContextFlag(),
 		OutputFlag(),
+		UrlsFlag(),
 	}
 }
 
 func (c *ExplainCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
+	urlsPaths := cliContext.StringSlice("url")
 	prePrompt := "Let me show you code files."
 	userPrompt := "Please explain this code for me in plain English."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, userPrompt)
+	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsPaths, userPrompt)
 	if err != nil {
 		return "", err
 	}

@@ -21,14 +21,17 @@ func (c *ProcessCommand) Flags() []cli.Flag {
 		InputFilesFlag(),
 		ContextFlag(),
 		OutputFlag(),
+		UrlsFlag(),
 	}
 }
 
 func (c *ProcessCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
-	prePrompt := "Let me show you files and than I will show you my prompt to use, it might include questions/asks about the files."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, userPrompt)
+	urlsList := cliContext.StringSlice("url")
+
+	prePrompt := "Let me show you files and/or and than I will show you my prompt to use, it might include questions/asks about the files."
+	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsList, userPrompt)
 	if err != nil {
 		return "", err
 	}

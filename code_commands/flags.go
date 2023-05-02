@@ -16,7 +16,14 @@ func InputFilesFlag() cli.Flag {
 		Name:     "input",
 		Aliases:  []string{"i"},
 		Usage:    "input files",
-		Required: true,
+	}
+}
+
+func UrlsFlag() cli.Flag {
+	return &cli.StringSliceFlag{
+		Name:     "url",
+		Aliases:  []string{"u"},
+		Usage:    "URL to download, extract text and feed to the GPT model",
 	}
 }
 

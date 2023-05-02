@@ -21,14 +21,16 @@ func (c *QuestionCommand) Flags() []cli.Flag {
 		InputFilesFlag(),
 		ContextFlag(),
 		OutputFlag(),
+		UrlsFlag(),
 	}
 }
 
 func (c *QuestionCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
+	urlsList := cliContext.StringSlice("url")
 	prePrompt := "Let me show you code files and than I will show you my question for the code in this files, please answer with example of the code where possible."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, userPrompt)
+	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsList, userPrompt)
 	if err != nil {
 		return "", err
 	}
