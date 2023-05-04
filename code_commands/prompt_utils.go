@@ -3,12 +3,15 @@ package code_commands
 import (
 	"io/ioutil"
 	"strings"
+	"os"
 	"text/template"
+	"path/filepath"
 
 	"net/http"
 	"net/url"
 	"errors"
 	"github.com/go-shiori/go-readability"
+	"github.com/assistant-ai/jess/utils"
 )
 
 // File structure to store file name and content
@@ -49,7 +52,7 @@ func extractReadableTextFromURL(urlString string) (string, error) {
 	return article.TextContent, nil
 }
 
-func FilePromptBuilder(prePrompt string, filePaths []string, urls []string, userPrompt string) (string, error) {
+func FilePromptBuilder(prePrompt string, filePaths []string, urls []string, googleDriveFiles []string, userPrompt string) (string, error) {
 	var files []File
 
 	// Read file contents and populate the files slice
@@ -67,6 +70,19 @@ func FilePromptBuilder(prePrompt string, filePaths []string, urls []string, user
 			return "", err
 		}
 		files = append(files, File{url, urlContent})
+	}
+
+	serviceAccountKeyFilePath := filepath.Join(os.Getenv("HOME"), ".jess/service-account.json")
+	gDriveHelper, err := utils.NewGoogleDriveHelper(serviceAccountKeyFilePath)
+	if err != nil {
+		return "", err
+	}
+	for _, googleDriveFile := range googleDriveFiles {
+		fileContent, err := gDriveHelper.GetFileContent(googleDriveFile)
+		if err != nil {
+			return "", err
+		}
+		files = append(files, File{googleDriveFile, fileContent})
 	}
 
 	// Template string

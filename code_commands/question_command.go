@@ -22,6 +22,7 @@ func (c *QuestionCommand) Flags() []cli.Flag {
 		ContextFlag(),
 		OutputFlag(),
 		UrlsFlag(),
+		GoogleDriveFilesFlag(),
 	}
 }
 
@@ -29,8 +30,9 @@ func (c *QuestionCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Cont
 	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
 	urlsList := cliContext.StringSlice("url")
+	googleDriveFiles := cliContext.StringSlice("gdrive")
 	prePrompt := "Let me show you code files and than I will show you my question for the code in this files, please answer with example of the code where possible."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsList, userPrompt)
+	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsList, googleDriveFiles, userPrompt)
 	if err != nil {
 		return "", err
 	}

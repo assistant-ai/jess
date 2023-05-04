@@ -84,6 +84,7 @@ func initGptClient(openAiKeyFilePath string) (*gpt.GptClient, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	client := gpt.NewDefaultGptClient(strings.ReplaceAll(string(b), "\n", ""))
 	client.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
 

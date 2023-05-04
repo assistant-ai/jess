@@ -51,3 +51,11 @@ func OutputFlag() cli.Flag {
 		Usage:   "output file path, if not specificed stdout will be used",
 	}
 }
+
+func GoogleDriveFilesFlag() cli.Flag {
+	return &cli.StringSliceFlag{
+		Name:     "gdrive",
+		Aliases:  []string{"g", "gd"},
+		Usage:    "Google Drive file ID",
+	}
+}

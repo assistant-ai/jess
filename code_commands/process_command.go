@@ -22,6 +22,7 @@ func (c *ProcessCommand) Flags() []cli.Flag {
 		ContextFlag(),
 		OutputFlag(),
 		UrlsFlag(),
+		GoogleDriveFilesFlag(),
 	}
 }
 
@@ -29,9 +30,10 @@ func (c *ProcessCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Conte
 	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
 	urlsList := cliContext.StringSlice("url")
+	googleDriveFiles := cliContext.StringSlice("gdrive")
 
 	prePrompt := "Let me show you files and/or and than I will show you my prompt to use, it might include questions/asks about the files."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsList, userPrompt)
+	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsList, googleDriveFiles, userPrompt)
 	if err != nil {
 		return "", err
 	}

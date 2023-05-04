@@ -10,4 +10,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/urfave/cli/v2 v2.25.1
+	golang.org/x/oauth2 v0.7.0 // indirect
+	google.golang.org/api v0.121.0 // indirect
 )
