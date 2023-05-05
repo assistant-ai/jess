@@ -53,6 +53,7 @@ func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
 		context_commands.DefineContextCommand(gpt),
 		processCommand.DefineCommand(gpt),
 		defineCodeCommand(gpt),
+		context_commands.DefineServeCommand(gpt),
 	}
 
 	return commands, nil
