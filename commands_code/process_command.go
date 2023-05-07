@@ -1,4 +1,4 @@
-package code_commands
+package commands_code
 
 import (
 	"github.com/assistant-ai/jess/commands_common"
@@ -7,17 +7,17 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type QuestionCommand struct{}
+type ProcessCommand struct{}
 
-func (c *QuestionCommand) Name() string {
-	return "question"
+func (c *ProcessCommand) Name() string {
+	return "process"
 }
 
-func (c *QuestionCommand) Usage() string {
-	return "Ask question about code files"
+func (c *ProcessCommand) Usage() string {
+	return "Process a files"
 }
 
-func (c *QuestionCommand) Flags() []cli.Flag {
+func (c *ProcessCommand) Flags() []cli.Flag {
 	return []cli.Flag{
 		commands_common.PromptFlag(),
 		commands_common.InputFilesFlag(),
@@ -28,12 +28,13 @@ func (c *QuestionCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *QuestionCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Context) (string, error) {
+func (c *ProcessCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
 	urlsList := cliContext.StringSlice("url")
 	googleDriveFiles := cliContext.StringSlice("gdrive")
-	prePrompt := "Let me show you code files and than I will show you my question for the code in this files, please answer with example of the code where possible."
+
+	prePrompt := "Let me show you files and/or and than I will show you my prompt to use, it might include questions/asks about the files."
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urlsList, googleDriveFiles, userPrompt)
 	if err != nil {
 		return "", err

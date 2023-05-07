@@ -1,4 +1,4 @@
-package code_commands
+package commands_code
 
 import (
 	"github.com/assistant-ai/jess/commands_common"

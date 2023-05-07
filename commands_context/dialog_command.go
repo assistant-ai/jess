@@ -1,4 +1,4 @@
-package context_commands
+package commands_context
 
 import (
 	"errors"
