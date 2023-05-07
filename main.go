@@ -7,6 +7,7 @@ import (
 
 	jess_cli "github.com/assistant-ai/jess/cli"
 	"github.com/assistant-ai/jess/code_commands"
+	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/context_commands"
 	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
@@ -44,7 +45,7 @@ func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
 		return nil, err
 	}
 
-	processCommand := code_commands.JessCommand{
+	processCommand := commands_common.JessCommand{
 		Command: &code_commands.ProcessCommand{},
 	}
 
@@ -60,13 +61,13 @@ func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
 }
 
 func defineCodeCommand(gpt *gpt.GptClient) *cli.Command {
-	questionCommand := code_commands.JessCommand{
+	questionCommand := commands_common.JessCommand{
 		Command: &code_commands.QuestionCommand{},
 	}
-	explainCommand := code_commands.JessCommand{
+	explainCommand := commands_common.JessCommand{
 		Command: &code_commands.ExplainCommand{},
 	}
-	refactorCommand := code_commands.JessCommand{
+	refactorCommand := commands_common.JessCommand{
 		Command: &code_commands.RefactorCommand{},
 	}
 	return &cli.Command{

@@ -1,6 +1,8 @@
 package code_commands
 
 import (
+	"github.com/assistant-ai/jess/commands_common"
+	"github.com/assistant-ai/jess/prompt"
 	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
@@ -17,12 +19,12 @@ func (c *ProcessCommand) Usage() string {
 
 func (c *ProcessCommand) Flags() []cli.Flag {
 	return []cli.Flag{
-		PromptFlag(),
-		InputFilesFlag(),
-		ContextFlag(),
-		OutputFlag(),
-		UrlsFlag(),
-		GoogleDriveFilesFlag(),
+		commands_common.PromptFlag(),
+		commands_common.InputFilesFlag(),
+		commands_common.ContextFlag(),
+		commands_common.OutputFlag(),
+		commands_common.UrlsFlag(),
+		commands_common.GoogleDriveFilesFlag(),
 	}
 }
 
@@ -33,7 +35,7 @@ func (c *ProcessCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Conte
 	googleDriveFiles := cliContext.StringSlice("gdrive")
 
 	prePrompt := "Let me show you files and/or and than I will show you my prompt to use, it might include questions/asks about the files."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsList, googleDriveFiles, userPrompt)
+	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urlsList, googleDriveFiles, userPrompt)
 	if err != nil {
 		return "", err
 	}

@@ -1,17 +1,18 @@
-package code_commands
+package prompt
 
 import (
 	"io/ioutil"
-	"strings"
 	"os"
-	"text/template"
 	"path/filepath"
+	"strings"
+	"text/template"
 
+	"errors"
 	"net/http"
 	"net/url"
-	"errors"
-	"github.com/go-shiori/go-readability"
+
 	"github.com/assistant-ai/jess/utils"
+	"github.com/go-shiori/go-readability"
 )
 
 // File structure to store file name and content
