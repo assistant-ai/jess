@@ -73,17 +73,19 @@ func FilePromptBuilder(prePrompt string, filePaths []string, urls []string, goog
 		files = append(files, File{url, urlContent})
 	}
 
-	serviceAccountKeyFilePath := filepath.Join(os.Getenv("HOME"), ".jess/service-account.json")
-	gDriveHelper, err := utils.NewGoogleDriveHelper(serviceAccountKeyFilePath)
-	if err != nil {
-		return "", err
-	}
-	for _, googleDriveFile := range googleDriveFiles {
-		fileContent, err := gDriveHelper.GetFileContent(googleDriveFile)
+	if len(googleDriveFiles) != 0 {
+		serviceAccountKeyFilePath := filepath.Join(os.Getenv("HOME"), ".jess/service-account.json")
+		gDriveHelper, err := utils.NewGoogleDriveHelper(serviceAccountKeyFilePath)
 		if err != nil {
 			return "", err
 		}
-		files = append(files, File{googleDriveFile, fileContent})
+		for _, googleDriveFile := range googleDriveFiles {
+			fileContent, err := gDriveHelper.GetFileContent(googleDriveFile)
+			if err != nil {
+				return "", err
+			}
+			files = append(files, File{googleDriveFile, fileContent})
+		}
 	}
 
 	// Template string
