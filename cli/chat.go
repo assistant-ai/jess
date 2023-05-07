@@ -63,12 +63,17 @@ func readNewMessage(scanner *bufio.Scanner) (string, error) {
 	return scanner.Text(), nil
 }
 
-func StartChat(contextId string, gpt *gpt.GptClient) error {
+func StartChat(rawContextId string, gpt *gpt.GptClient) error {
+	contextId := rawContextId
+	if rawContextId == "" {
+		rawContextId = db.RandomContextId
+	}
 	quit := make(chan bool)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	messages := make([]db.Message, 0)
 	messages, err := db.GetMessagesByContextID(contextId)
+
 	if err != nil {
 		return err
 	}

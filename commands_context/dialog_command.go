@@ -1,7 +1,6 @@
 package commands_context
 
 import (
-	"errors"
 	"fmt"
 
 	jess_cli "github.com/assistant-ai/jess/cli"
@@ -30,7 +29,7 @@ func handleDialogAction(gpt *gpt.GptClient) func(c *cli.Context) error {
 		} else if id := c.String("delete"); id != "" {
 			HandleDialogDelete(id)
 		} else {
-			return errors.New("no required key provided")
+			handleDialogContinue("", gpt)
 		}
 		return nil
 	}

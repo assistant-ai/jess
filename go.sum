@@ -638,6 +638,8 @@ github.com/assistant-ai/llmchat-client v0.6.0 h1:OcmnWyBbM6g7yWVRZAUPjomw9kLHBBC
 github.com/assistant-ai/llmchat-client v0.6.0/go.mod h1:fpaUAMco+QmtHazYg0tg64zFGMsLAWdwkSLfIYHWdSE=
 github.com/assistant-ai/llmchat-client v0.7.0 h1:M8tLYe2hKFY9lwRm59QpQF4NiJ3F0M/uye2pI3yFZ7g=
 github.com/assistant-ai/llmchat-client v0.7.0/go.mod h1:fpaUAMco+QmtHazYg0tg64zFGMsLAWdwkSLfIYHWdSE=
+github.com/assistant-ai/llmchat-client v0.8.0 h1:20OyUfFJTtK529Xr7+YDSZU7gFJAKjHFN/Jfo33L2vE=
+github.com/assistant-ai/llmchat-client v0.8.0/go.mod h1:M0r5c/3ylnG4eT/PODCTLSyQ+2+LCoXrCX/c7rvMCw8=
 github.com/b0noi/go-utils/v2 v2.2.0 h1:PLecFwV4xrzbB+KczH4pRZkXOqfXXog/YJV/P1iSeEA=
 github.com/b0noi/go-utils/v2 v2.2.0/go.mod h1:nSEucF2Gm9UV0nUkDrKwXq5twuU4L2/ObunPzKph8lU=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
