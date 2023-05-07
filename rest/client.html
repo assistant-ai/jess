@@ -49,6 +49,7 @@
       background-color: blue;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -130,7 +131,7 @@
             // hide progress bar
             progressContainer.style.display = 'none';
 
-            displayRawMessage(response);
+            displayMessage(response, true);
             messageInput.value = '';
           })
           .catch(() => {
@@ -146,43 +147,30 @@
         fetch(`http://localhost:8080/contexts/${contextId}/messages`)
           .then(res => res.json())
           .then(messages => {
-            messages.forEach(displayMessage);
+            messages.forEach((msg) => {displayMessage(msg, false)});
           });
       }
 
-      function displayRawMessage(message) {
+      function displayMessage(message, isRaw = false) {
+        const md = new markdownit();
+    
         const messageDiv = document.createElement("div");
         messageDiv.className = "list-group-item message-container";
-
+    
         const senderSpan = document.createElement("span");
-        senderSpan.textContent = "user: ";
+        // Check if it's a raw message or contains a sender property
+        senderSpan.textContent = isRaw ? "user: " : `${message.sender}: `;
         messageDiv.appendChild(senderSpan);
-
+    
         const contentSpan = document.createElement("span");
         contentSpan.className = "message-content";
-        contentSpan.textContent = `${message}`;
+        // Check if it's a raw message or a message object with content property
+        contentSpan.innerHTML = md.render(isRaw ? message : message.content);
         messageDiv.appendChild(contentSpan);
-
+    
         messageList.appendChild(messageDiv);
         messageList.scrollTop = messageList.scrollHeight;
-      }
-
-      function displayMessage(message) {
-        const messageDiv = document.createElement("div");
-        messageDiv.className = "list-group-item message-container";
-
-        const senderSpan = document.createElement("span");
-        senderSpan.textContent = `${message.sender}: `;
-        messageDiv.appendChild(senderSpan);
-
-        const contentSpan = document.createElement("span");
-        contentSpan.className = "message-content";
-        contentSpan.textContent = `${message.content}`;
-        messageDiv.appendChild(contentSpan);
-
-        messageList.appendChild(messageDiv);
-        messageList.scrollTop = messageList.scrollHeight;
-      }
+    }
     });
   </script>
 </body>
