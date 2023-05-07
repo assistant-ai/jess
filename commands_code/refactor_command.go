@@ -1,6 +1,8 @@
-package code_commands
+package commands_code
 
 import (
+	"github.com/assistant-ai/jess/commands_common"
+	"github.com/assistant-ai/jess/prompt"
 	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
@@ -17,9 +19,9 @@ func (c *RefactorCommand) Usage() string {
 
 func (c *RefactorCommand) Flags() []cli.Flag {
 	return []cli.Flag{
-		InputFileFlag(),
-		ContextFlag(),
-		OutputFlag(),
+		commands_common.InputFileFlag(),
+		commands_common.ContextFlag(),
+		commands_common.OutputFlag(),
 	}
 }
 
@@ -30,7 +32,7 @@ func (c *RefactorCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Cont
 	gDriveFiles := []string{}
 	prePrompt := "Let me show you code file."
 	userPrompt := "Please refactor it using the best practices of the language that is used. Ideally final verison should be as readable as possible. You can refactor any way you want as long as public APIs are no changed. Feel free to extract anything that is needed to a helper function/methods entities. Your final output should be full content of the file end-to-end without any text before/after, I will use your output and override my original file."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
+	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
 		return "", err
 	}

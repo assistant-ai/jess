@@ -1,6 +1,8 @@
-package code_commands
+package commands_code
 
 import (
+	"github.com/assistant-ai/jess/commands_common"
+	"github.com/assistant-ai/jess/prompt"
 	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
@@ -17,12 +19,12 @@ func (c *QuestionCommand) Usage() string {
 
 func (c *QuestionCommand) Flags() []cli.Flag {
 	return []cli.Flag{
-		PromptFlag(),
-		InputFilesFlag(),
-		ContextFlag(),
-		OutputFlag(),
-		UrlsFlag(),
-		GoogleDriveFilesFlag(),
+		commands_common.PromptFlag(),
+		commands_common.InputFilesFlag(),
+		commands_common.ContextFlag(),
+		commands_common.OutputFlag(),
+		commands_common.UrlsFlag(),
+		commands_common.GoogleDriveFilesFlag(),
 	}
 }
 
@@ -32,7 +34,7 @@ func (c *QuestionCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Cont
 	urlsList := cliContext.StringSlice("url")
 	googleDriveFiles := cliContext.StringSlice("gdrive")
 	prePrompt := "Let me show you code files and than I will show you my question for the code in this files, please answer with example of the code where possible."
-	finalPrompt, err := FilePromptBuilder(prePrompt, filePaths, urlsList, googleDriveFiles, userPrompt)
+	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urlsList, googleDriveFiles, userPrompt)
 	if err != nil {
 		return "", err
 	}

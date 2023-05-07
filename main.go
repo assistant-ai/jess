@@ -6,8 +6,10 @@ import (
 	"strings"
 
 	jess_cli "github.com/assistant-ai/jess/cli"
-	"github.com/assistant-ai/jess/code_commands"
-	"github.com/assistant-ai/jess/context_commands"
+	"github.com/assistant-ai/jess/commands_code"
+	"github.com/assistant-ai/jess/commands_common"
+	"github.com/assistant-ai/jess/commands_context"
+	"github.com/assistant-ai/jess/commands_text"
 	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
@@ -44,40 +46,20 @@ func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
 		return nil, err
 	}
 
-	processCommand := code_commands.JessCommand{
-		Command: &code_commands.ProcessCommand{},
+	processCommand := commands_common.JessCommand{
+		Command: &commands_code.ProcessCommand{},
 	}
 
 	commands := []*cli.Command{
-		context_commands.DefineDialogCommand(gpt),
-		context_commands.DefineContextCommand(gpt),
+		commands_context.DefineDialogCommand(gpt),
+		commands_context.DefineContextCommand(gpt),
 		processCommand.DefineCommand(gpt),
-		defineCodeCommand(gpt),
-		context_commands.DefineServeCommand(gpt),
+		commands_code.DefineCodeCommand(gpt),
+		commands_text.DefineTextCommand(gpt),
+		commands_context.DefineServeCommand(gpt),
 	}
 
 	return commands, nil
-}
-
-func defineCodeCommand(gpt *gpt.GptClient) *cli.Command {
-	questionCommand := code_commands.JessCommand{
-		Command: &code_commands.QuestionCommand{},
-	}
-	explainCommand := code_commands.JessCommand{
-		Command: &code_commands.ExplainCommand{},
-	}
-	refactorCommand := code_commands.JessCommand{
-		Command: &code_commands.RefactorCommand{},
-	}
-	return &cli.Command{
-		Name:  "code",
-		Usage: "Actions to take with code",
-		Subcommands: []*cli.Command{
-			questionCommand.DefineCommand(gpt),
-			explainCommand.DefineCommand(gpt),
-			refactorCommand.DefineCommand(gpt),
-		},
-	}
 }
 
 func initGptClient(openAiKeyFilePath string) (*gpt.GptClient, error) {

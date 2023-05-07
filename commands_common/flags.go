@@ -1,4 +1,4 @@
-package code_commands
+package commands_common
 
 import "github.com/urfave/cli/v2"
 
@@ -13,17 +13,17 @@ func PromptFlag() cli.Flag {
 
 func InputFilesFlag() cli.Flag {
 	return &cli.StringSliceFlag{
-		Name:     "input",
-		Aliases:  []string{"i"},
-		Usage:    "input files",
+		Name:    "input",
+		Aliases: []string{"i"},
+		Usage:   "input files",
 	}
 }
 
 func UrlsFlag() cli.Flag {
 	return &cli.StringSliceFlag{
-		Name:     "url",
-		Aliases:  []string{"u"},
-		Usage:    "URL to download, extract text and feed to the GPT model",
+		Name:    "url",
+		Aliases: []string{"u"},
+		Usage:   "URL to download, extract text and feed to the GPT model",
 	}
 }
 
@@ -54,8 +54,8 @@ func OutputFlag() cli.Flag {
 
 func GoogleDriveFilesFlag() cli.Flag {
 	return &cli.StringSliceFlag{
-		Name:     "gdrive",
-		Aliases:  []string{"g", "gd"},
-		Usage:    "Google Drive file ID",
+		Name:    "gdrive",
+		Aliases: []string{"g", "gd"},
+		Usage:   "Google Drive file ID",
 	}
 }

@@ -1,4 +1,4 @@
-package code_commands
+package commands_common
 
 import (
 	"fmt"

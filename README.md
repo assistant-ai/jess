@@ -2,6 +2,9 @@
 
 Jessica is an AI assistant for software developers to help them with their code by explaining, refactoring, and answering questions. It is primarily used as a Command Line Interface (CLI) tool.
 
+* [Discord](https://discord.gg/7cUrMbcm)
+* [Video With Example](https://youtu.be/j1ChHnMqmP4)
+
 ## Installation
 
 To install, first, clone the repository and navigate to the project directory:
