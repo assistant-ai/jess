@@ -7,7 +7,7 @@ git push --tags
 . ./build.sh
 
 # Upload binary jess to the GitHub release
-gh release create "v$VERSION" --title "Release version $VERSION" --notes "Added logic to upload binary jess."
+gh release create "v$VERSION" --title "Release version $VERSION"
 
 upload_and_remove_binary() {
   local path=$1
