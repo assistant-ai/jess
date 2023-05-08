@@ -1,17 +1,17 @@
 package rest
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
-	"embed"
-	"io"
 
-	"github.com/gorilla/mux"
-	"github.com/gorilla/handlers"
 	"github.com/assistant-ai/llmchat-client/db"
 	"github.com/assistant-ai/llmchat-client/gpt"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 )
 
 //go:embed client.html
@@ -21,14 +21,16 @@ func StartRest(gpt *gpt.GptClient) {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/contexts", getContextList).Methods("GET")
+	r.HandleFunc("/contexts/{contextId}", createContext).Methods("POST")
 	r.HandleFunc("/contexts/{contextId}/messages", getMessagesInContext).Methods("GET")
-	r.HandleFunc("/contexts/{contextId}/messages", func (w http.ResponseWriter, r *http.Request) {sendMessageToChatGPT(w, r, gpt)}).Methods("POST")
+	r.HandleFunc("/contexts/{contextId}/messages", func(w http.ResponseWriter, r *http.Request) { sendMessageToChatGPT(w, r, gpt) }).Methods("POST")
+	r.HandleFunc("/contexts/{contextId}", deleteContext).Methods("DELETE")
 
 	cors := handlers.CORS(
-        handlers.AllowedOrigins([]string{"*"}),
-        handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS", "PUT", "DELETE"}),
-        handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
-    )
+		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedMethods([]string{"POST", "GET", "OPTIONS", "PUT", "DELETE"}),
+		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
+	)
 	// Serve embedded client.html file on root route
 	r.HandleFunc("/", serveClientHtml)
 
@@ -103,4 +105,50 @@ func sendMessageToChatGPT(w http.ResponseWriter, r *http.Request, gpt *gpt.GptCl
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func createContext(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	contextId := vars["contextId"]
+	// Parse JSON from the request body as a map parameter
+	var requestBody map[string]string
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
+		return
+	}
+
+	// Get prompt and check if it's provided
+	prompt := requestBody["prompt"]
+	if prompt == "" {
+		http.Error(w, "prompt is required", http.StatusBadRequest)
+		return
+	}
+
+	// Create a new context and save it
+	err = db.UpdateContext(contextId, prompt)
+	if err != nil {
+		http.Error(w, "Failed to create a new context", http.StatusInternalServerError)
+	}
+
+	// Return the created contextId in the response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"contextId": contextId})
+}
+
+func deleteContext(w http.ResponseWriter, r *http.Request) {
+	// Get the contextId from URL parameters
+	vars := mux.Vars(r)
+	contextId := vars["contextId"]
+
+	// Delete the context and handle errors
+	err := db.RemoveContext(contextId)
+	if err != nil {
+		http.Error(w, "Failed to delete the context", http.StatusInternalServerError)
+		return
+	}
+
+	// Return a confirmation message
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "Context deleted successfully"})
 }
