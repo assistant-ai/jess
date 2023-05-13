@@ -5,20 +5,20 @@ import (
 
 	jess_cli "github.com/assistant-ai/jess/cli"
 	"github.com/assistant-ai/llmchat-client/db"
-	"github.com/assistant-ai/llmchat-client/gpt"
+	"github.com/assistant-ai/llmchat-client/client"
 	"github.com/urfave/cli/v2"
 )
 
-func DefineContextCommand(gpt *gpt.GptClient) *cli.Command {
+func DefineContextCommand(llmClient *client.Client) *cli.Command {
 	return &cli.Command{
 		Name:   "context",
 		Usage:  "Manage contexts",
-		Action: handleContextAction(gpt),
+		Action: handleContextAction(llmClient),
 		Flags:  contextFlags(),
 	}
 }
 
-func handleContextAction(gpt *gpt.GptClient) func(c *cli.Context) error {
+func handleContextAction(llmClient *client.Client) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		if c.Bool("list") {
 			HandleDialogList()
@@ -70,10 +70,9 @@ func contextFlags() []cli.Flag {
 
 func handleContextShow(contextId string) {
 	message, err := db.GetContextMessage(contextId)
-	messages := []db.Message{message}
 	jess_cli.HandleError(err)
 
-	jess_cli.ShowMessages(messages)
+	jess_cli.ShowContext(message)
 }
 
 func handleContextSet(contextId string, prompt string) {

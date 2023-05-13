@@ -10,7 +10,9 @@ import (
 
 	"github.com/assistant-ai/jess/model"
 	"github.com/assistant-ai/llmchat-client/db"
-	"github.com/assistant-ai/llmchat-client/gpt"
+	"github.com/assistant-ai/llmchat-client/client"
+
+	"github.com/sirupsen/logrus"
 )
 
 func AnimateThinking(quit chan bool) {
@@ -47,6 +49,10 @@ func generatePrompt(input model.FileInput, tmplFile string) (string, error) {
 	return output.String(), nil
 }
 
+func ShowContext(context string) {
+	fmt.Printf("Context message is: %s\n", context)
+}
+
 func ShowMessages(messages []db.Message) {
 	for _, message := range messages {
 		formattedTimestamp := message.Timestamp.Format(model.TimestampFormattingTemplate)
@@ -63,7 +69,7 @@ func readNewMessage(scanner *bufio.Scanner) (string, error) {
 	return scanner.Text(), nil
 }
 
-func StartChat(rawContextId string, gpt *gpt.GptClient) error {
+func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Logger) error {
 	contextId := rawContextId
 	if rawContextId == "" {
 		rawContextId = db.RandomContextId
@@ -93,13 +99,21 @@ func StartChat(rawContextId string, gpt *gpt.GptClient) error {
 		}
 		go AnimateThinking(quit)
 
-		response, err := gpt.SendMessage(newMessage, contextId)
-		if err != nil {
-			fmt.Printf("Error: %s\n", err)
-			continue
-		}
-		quit <- true
+		logger.WithFields(logrus.Fields{
+			"message": newMessage,
+			"contextId": contextId,
+		  }).Debug("About to send a message")
 
+		if llmClient == nil {
+			logger.Fatal("llmClient is null, this should never be the case here")
+		}
+		response, err := llmClient.SendMessage(newMessage, contextId)
+		quit <- true
+		if err != nil {
+			logger.Error("error from llmClient in chat dialog")
+			return err
+		}
+		
 		fmt.Printf("\n\n\nJess: %s\n\n\n", response)
 	}
 

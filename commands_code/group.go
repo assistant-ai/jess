@@ -2,11 +2,11 @@ package commands_code
 
 import (
 	"github.com/assistant-ai/jess/commands_common"
-	"github.com/assistant-ai/llmchat-client/gpt"
+	"github.com/assistant-ai/llmchat-client/client"
 	"github.com/urfave/cli/v2"
 )
 
-func DefineCodeCommand(gpt *gpt.GptClient) *cli.Command {
+func DefineCodeCommand(llmClient *client.Client) *cli.Command {
 	questionCommand := commands_common.JessCommand{
 		Command: &QuestionCommand{},
 	}
@@ -20,9 +20,9 @@ func DefineCodeCommand(gpt *gpt.GptClient) *cli.Command {
 		Name:  "code",
 		Usage: "Actions to take with code",
 		Subcommands: []*cli.Command{
-			questionCommand.DefineCommand(gpt),
-			explainCommand.DefineCommand(gpt),
-			refactorCommand.DefineCommand(gpt),
+			questionCommand.DefineCommand(llmClient),
+			explainCommand.DefineCommand(llmClient),
+			refactorCommand.DefineCommand(llmClient),
 		},
 	}
 }

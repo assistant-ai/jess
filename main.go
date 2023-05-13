@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"fmt"
 	"path/filepath"
 	"strings"
 
@@ -10,28 +11,38 @@ import (
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/commands_context"
 	"github.com/assistant-ai/jess/commands_text"
+	"github.com/assistant-ai/jess/utils"
 	"github.com/assistant-ai/llmchat-client/gpt"
+	"github.com/assistant-ai/llmchat-client/db"
+	"github.com/assistant-ai/llmchat-client/client"
+	"github.com/assistant-ai/llmchat-client/palm"
 	"github.com/urfave/cli/v2"
+	"github.com/sirupsen/logrus"
 )
 
 var version = "unknown"
 
 func main() {
-	apiKeyFilePath := filepath.Join(os.Getenv("HOME"), ".open-ai.key")
-	app, err := setupApp(&apiKeyFilePath)
+	app, err := setupApp()
 	jess_cli.HandleError(err)
 
 	err = app.Run(os.Args)
 	jess_cli.HandleError(err)
 }
 
-func setupApp(apiKeyFilePath *string) (*cli.App, error) {
+func setupApp() (*cli.App, error) {
 	app := cli.NewApp()
 	app.Name = "jessica"
 	app.Usage = "Jessica is an AI assistent."
 	app.Version = version
 
-	commands, err := defineCommands(apiKeyFilePath)
+	config, err := utils.LoadConfig("")
+	if err != nil {
+		return nil, err
+	}
+	logger := utils.SetupLogger(config)
+	logger.Debug("Logger been initialized")
+	commands, err := defineCommands(config, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -40,8 +51,8 @@ func setupApp(apiKeyFilePath *string) (*cli.App, error) {
 	return app, nil
 }
 
-func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
-	gpt, err := initGptClient(*apiKeyFilePath)
+func defineCommands(config *utils.AppConfig, logger *logrus.Logger) ([]*cli.Command, error) {
+	llmClient, err := initClient(config, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -51,30 +62,57 @@ func defineCommands(apiKeyFilePath *string) ([]*cli.Command, error) {
 	}
 
 	commands := []*cli.Command{
-		commands_context.DefineDialogCommand(gpt),
-		commands_context.DefineContextCommand(gpt),
-		processCommand.DefineCommand(gpt),
-		commands_code.DefineCodeCommand(gpt),
-		commands_text.DefineTextCommand(gpt),
-		commands_context.DefineServeCommand(gpt),
+		commands_context.DefineDialogCommand(llmClient, logger),
+		commands_context.DefineContextCommand(llmClient),
+		processCommand.DefineCommand(llmClient),
+		commands_code.DefineCodeCommand(llmClient),
+		commands_text.DefineTextCommand(llmClient),
+		commands_context.DefineServeCommand(llmClient),
 	}
 
 	return commands, nil
 }
 
-func initGptClient(openAiKeyFilePath string) (*gpt.GptClient, error) {
-	b, err := os.ReadFile(openAiKeyFilePath)
-	if err != nil {
-		return nil, err
+func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client, error) {
+	var llmClient *client.Client
+	var err error
+	modelName := strings.ToLower(config.ModelName)
+	logger.WithFields(logrus.Fields{
+		"config.ModelName": config.ModelName,
+	  }).Debug("Creating client")
+	if modelName == "gpt4" {
+		llmClient, err = gpt.NewDefaultGptClientFromFile(config.OpenAiApiKeyPath)
+		if err != nil {
+			return nil, err
+		}
+	} else if modelName == "gpt3" {
+		llmClient = gpt.NewGptClient(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000)
+	} else if modelName == "palm" {
+		if (config.GCPProjectId == "") {
+			errorText := "model is PaLM but GCP Project ID is null"
+			logger.Error(errorText)
+			return nil, fmt.Errorf(errorText)
+		}
+		if (config.ServiceAccountKeyPath == "") {
+			errorText := "model is PaLM but GCP service acout json path is null"
+			logger.Error(errorText)
+			return nil, fmt.Errorf(errorText)
+		}
+		llmClient, err = palm.NewPalmClient(config.GCPProjectId, config.ServiceAccountKeyPath)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		logger.WithFields(logrus.Fields{
+			"config.ModelName": config.ModelName,
+		  }).Fatal("No model specified, config did not parsed correctly")
 	}
+    llmClient.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
 
-	client := gpt.NewDefaultGptClient(strings.ReplaceAll(string(b), "\n", ""))
-	client.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
-
-When replying, consider information gaps and ask for clarification if needed. 
-Limit this to avoid excess. 
-Decide when to answer directly. 
-Assume basic knowledge. 
+When replying, consider information gaps and ask for clarification if needed.
+Limit this to avoid excess.
+Decide when to answer directly.
+Assume basic knowledge.
 Concise over politeness.`
-	return client, nil
+    return llmClient, nil
 }

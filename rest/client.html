@@ -155,20 +155,23 @@
         const loadingSpinner = document.getElementById('loadingSpinner');
         
         messageForm.addEventListener('submit', (e) => {
-          e.preventDefault();
-          if (!currentContextId) {
-            alert('Please select a context first.');
-            return;
-          }
-          const message = messageInput.value.trim();
-          if (!message) return;
-        
-          // Display the user's message
-          displayMessage({ sender: "user", content: message });
-        
-          // Disable the send button and show the spinner
-          sendButton.disabled = true;
-          loadingSpinner.style.display = 'block';
+            e.preventDefault();
+            if (!currentContextId) {
+                alert('Please select a context first.');
+                return;
+            }
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Display the user's message
+            displayMessage({ sender: "user", content: message });
+
+            // Clear the message input
+            messageInput.textContent = '';
+
+            // Disable the send button and show the spinner
+            sendButton.disabled = true;
+            loadingSpinner.style.display = 'block';
         
           fetch(`http://localhost:8080/contexts/${currentContextId}/messages`, {
             method: 'POST',

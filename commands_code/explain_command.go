@@ -3,7 +3,6 @@ package commands_code
 import (
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/prompt"
-	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
 
@@ -27,7 +26,7 @@ func (c *ExplainCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *ExplainCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Context) (string, error) {
+func (c *ExplainCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
 	urlsPaths := cliContext.StringSlice("url")
 	googleDriveFiles := cliContext.StringSlice("gdrive")

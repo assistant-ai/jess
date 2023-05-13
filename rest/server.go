@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/assistant-ai/llmchat-client/db"
-	"github.com/assistant-ai/llmchat-client/gpt"
+	"github.com/assistant-ai/llmchat-client/client"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
@@ -17,13 +17,13 @@ import (
 //go:embed client.html
 var clientHtml embed.FS
 
-func StartRest(gpt *gpt.GptClient) {
+func StartRest(llmClient *client.Client) {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/contexts", getContextList).Methods("GET")
 	r.HandleFunc("/contexts/{contextId}", createContext).Methods("POST")
 	r.HandleFunc("/contexts/{contextId}/messages", getMessagesInContext).Methods("GET")
-	r.HandleFunc("/contexts/{contextId}/messages", func(w http.ResponseWriter, r *http.Request) { sendMessageToChatGPT(w, r, gpt) }).Methods("POST")
+	r.HandleFunc("/contexts/{contextId}/messages", func(w http.ResponseWriter, r *http.Request) { sendMessageToChatGPT(w, r, llmClient) }).Methods("POST")
 	r.HandleFunc("/contexts/{contextId}", deleteContext).Methods("DELETE")
 
 	cors := handlers.CORS(
@@ -81,7 +81,7 @@ func getMessagesInContext(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(messages)
 }
 
-func sendMessageToChatGPT(w http.ResponseWriter, r *http.Request, gpt *gpt.GptClient) {
+func sendMessageToChatGPT(w http.ResponseWriter, r *http.Request, llmClient *client.Client) {
 	vars := mux.Vars(r)
 	contextId := vars["contextId"]
 
@@ -99,7 +99,7 @@ func sendMessageToChatGPT(w http.ResponseWriter, r *http.Request, gpt *gpt.GptCl
 		return
 	}
 
-	response, err := gpt.SendMessage(message, contextId)
+	response, err := llmClient.SendMessage(message, contextId)
 	if err != nil {
 		return
 	}

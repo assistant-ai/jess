@@ -2,22 +2,22 @@ package commands_context
 
 import (
 	"github.com/assistant-ai/jess/rest"
-	"github.com/assistant-ai/llmchat-client/gpt"
+	"github.com/assistant-ai/llmchat-client/client"
 	"github.com/urfave/cli/v2"
 )
 
-func DefineServeCommand(gpt *gpt.GptClient) *cli.Command {
+func DefineServeCommand(llmClient *client.Client) *cli.Command {
 	return &cli.Command{
 		Name:   "serve",
 		Usage:  "start REST service",
-		Action: handleServeAction(gpt),
+		Action: handleServeAction(llmClient),
 		Flags:  serveFlags(),
 	}
 }
 
-func handleServeAction(gpt *gpt.GptClient) func(c *cli.Context) error {
+func handleServeAction(llmClient *client.Client) func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		rest.StartRest(gpt)
+		rest.StartRest(llmClient)
 		return nil
 	}
 }

@@ -3,7 +3,6 @@ package commands_code
 import (
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/prompt"
-	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/urfave/cli/v2"
 )
 
@@ -25,7 +24,7 @@ func (c *RefactorCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *RefactorCommand) PreparePrompt(gpt *gpt.GptClient, cliContext *cli.Context) (string, error) {
+func (c *RefactorCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
 	filePath := cliContext.String("input")
 	filePaths := []string{filePath}
 	urls := []string{}
