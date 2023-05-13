@@ -2,7 +2,7 @@ module github.com/assistant-ai/jess
 
 go 1.16
 
-// eplace github.com/assistant-ai/llmchat-client => ../llmchat-client
+// replace github.com/assistant-ai/llmchat-client => ../llmchat-client
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.1 // indirect

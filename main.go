@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"fmt"
-	"path/filepath"
 	"strings"
 
 	jess_cli "github.com/assistant-ai/jess/cli"
@@ -77,6 +76,7 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 	var llmClient *client.Client
 	var err error
 	modelName := strings.ToLower(config.ModelName)
+	fmt.Printf("Model that is used for this task: %s\n", modelName)
 	logger.WithFields(logrus.Fields{
 		"config.ModelName": config.ModelName,
 	  }).Debug("Creating client")
