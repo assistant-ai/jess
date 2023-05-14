@@ -1,29 +1,55 @@
 steps:
-  # Set the version from VERSION file
-  - name: 'gcr.io/cloud-builders/gsutil'
-    id: 'version'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - 'VERSION="$(cat VERSION)" && echo "version=${VERSION}" >> version.env'
+# Set the version
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: '/bin/sh'
+  args:
+  - '-c'
+  - 'VERSION=$(cat VERSION) && echo "Version: $VERSION" && echo "## VERSION=$VERSION" > version.env'
+  waitFor: ['-']
+  id: 'set_version'
 
-  # Building for Linux, Mac, and Windows using build.sh script
-  - id: 'build-multi-platform'
-    name: 'golang:1.20' # Replace with the desired Golang version
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - './build.sh'
-    env:
-      - 'GO111MODULE=on'
-      - 'CGO_ENABLED=1'
-      - '_VERSION=$$VERSION'
+# Build the Linux binary
+- name: 'gcr.io/cloud-builders/go'
+  entrypoint: '/bin/bash'
+  args:
+  - '-c'
+  - 'CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=$$VERSION" -o jess-linux-amd64'
+  env: ['PROJECT_ROOT=github.com/assistant-ai/jess', '$_GO_GCFLAGS']
+  waitFor: ['set_version']
 
+# Build the Mac binary
+- name: 'gcr.io/cloud-builders/go'
+  entrypoint: '/bin/bash'
+  args:
+  - '-c'
+  - 'CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=$$VERSION" -o jess-darwin-amd64'
+  env: ['PROJECT_ROOT=github.com/assistant-ai/jess', '$_GO_GCFLAGS']
+  waitFor: ['set_version']
+
+# Build the Mac ARM64 binary
+- name: 'gcr.io/cloud-builders/go'
+  entrypoint: '/bin/bash'
+  args:
+  - '-c'
+  - 'CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.version=$$VERSION" -o jess-darwin-arm64'
+  env: ['PROJECT_ROOT=github.com/assistant-ai/jess', '$_GO_GCFLAGS']
+  waitFor: ['set_version']
+
+# Build the Windows binary
+- name: 'gcr.io/cloud-builders/go'
+  entrypoint: '/bin/bash'
+  args:
+  - '-c'
+  - 'CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=$$VERSION" -o jess-windows-amd64.exe'
+  env: ['PROJECT_ROOT=github.com/assistant-ai/jess', '$_GO_GCFLAGS']
+  waitFor: ['set_version']
+
+# example of how to store artifacts
 artifacts:
   objects:
     location: 'gs://jess-artifacts/'
-    paths: # list of artifacts to be saved
-      - 'jess-linux-amd64'
-      - 'jess-darwin-amd64'
-      - 'jess-darwin-arm64'
-      - 'jess-windows-amd64.exe'
+    paths:
+    - 'jess-linux-amd64'
+    - 'jess-darwin-amd64'
+    - 'jess-darwin-arm64'
+    - 'jess-windows-amd64.exe'
