@@ -1,20 +1,10 @@
 steps:
-# Set the version
-- name: 'gcr.io/cloud-builders/gcloud'
-  entrypoint: '/bin/sh'
-  args:
-  - '-c'
-  - 'VERSION=$(cat VERSION) && echo "Version: $VERSION" && echo "## VERSION=$VERSION" > version.env'
-  waitFor: ['-']
-  id: 'set_version'
-
 # Build the Linux binary
 - name: 'gcr.io/cloud-builders/go'
   entrypoint: '/bin/bash'
   args:
   - '-c'
-  - 'CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=$$VERSION" -o jess-linux-amd64'
-  env: ['PROJECT_ROOT=github.com/assistant-ai/jess', '$_GO_GCFLAGS']
+  - 'CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-linux-amd64'
   waitFor: ['set_version']
 
 # Build the Mac binary
@@ -22,8 +12,7 @@ steps:
   entrypoint: '/bin/bash'
   args:
   - '-c'
-  - 'CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=$$VERSION" -o jess-darwin-amd64'
-  env: ['PROJECT_ROOT=github.com/assistant-ai/jess', '$_GO_GCFLAGS']
+  - 'CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-darwin-amd64'
   waitFor: ['set_version']
 
 # Build the Mac ARM64 binary
@@ -31,8 +20,7 @@ steps:
   entrypoint: '/bin/bash'
   args:
   - '-c'
-  - 'CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.version=$$VERSION" -o jess-darwin-arm64'
-  env: ['PROJECT_ROOT=github.com/assistant-ai/jess', '$_GO_GCFLAGS']
+  - 'CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-darwin-arm64'
   waitFor: ['set_version']
 
 # Build the Windows binary
@@ -40,8 +28,7 @@ steps:
   entrypoint: '/bin/bash'
   args:
   - '-c'
-  - 'CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=$$VERSION" -o jess-windows-amd64.exe'
-  env: ['PROJECT_ROOT=github.com/assistant-ai/jess', '$_GO_GCFLAGS']
+  - 'CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-windows-amd64.exe'
   waitFor: ['set_version']
 
 # example of how to store artifacts
