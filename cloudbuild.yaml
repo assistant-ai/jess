@@ -1,24 +1,24 @@
 steps:
 # Build the Linux binary
-- name: 'gcr.io/cloud-builders/go'
+- name: 'gcr.io/cloud-builders/go:1.20'
   args:
   - '-c'
   - 'CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-linux-amd64'
 
 # Build the Mac binary
-- name: 'gcr.io/cloud-builders/go'
+- name: 'gcr.io/cloud-builders/go:1.20'
   args:
   - '-c'
   - 'CGO_ENABLED=1 GOOS=darwin GOARCH=amd64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-darwin-amd64'
 
 # Build the Mac ARM64 binary
-- name: 'gcr.io/cloud-builders/go'
+- name: 'gcr.io/cloud-builders/go:1.20'
   args:
   - '-c'
   - 'CGO_ENABLED=1 GOOS=darwin GOARCH=arm64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-darwin-arm64'
 
 # Build the Windows binary
-- name: 'gcr.io/cloud-builders/go'
+- name: 'gcr.io/cloud-builders/go:1.20'
   args:
   - '-c'
   - 'CGO_ENABLED=1 GOOS=windows GOARCH=amd64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-windows-amd64.exe'
