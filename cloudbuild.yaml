@@ -1,11 +1,4 @@
 steps:
-# Run go mod tidy
-- name: 'golang'
-  entrypoint: '/bin/sh'
-  args:
-  - '-c'
-  - 'go mod tidy'
-
 # Build the Linux binary
 - name: 'rtlong/gox'
   entrypoint: '/bin/sh'
