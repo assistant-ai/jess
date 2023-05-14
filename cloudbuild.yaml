@@ -1,9 +1,22 @@
 steps:
+# Run go mod tidy
+- name: 'golang'
+  entrypoint: '/bin/sh'
+  args:
+  - '-c'
+  - 'go mod tidy'
+  volumes:
+  - name: 'gocache'
+    path: '/go'
+
 # Build the Linux binary
 - name: 'rtlong/gox'
   entrypoint: '/bin/sh'
   args:
   - './build.sh'
+  volumes:
+  - name: 'gocache'
+    path: '/go'
 
 # example of how to store artifacts
 artifacts:
