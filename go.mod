@@ -9,7 +9,9 @@ require (
 	github.com/go-shiori/go-readability v0.0.0-20230421032831-c66949dfc0ad
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
+	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
+	github.com/mitchellh/gox v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/viper v1.15.0
 	github.com/urfave/cli/v2 v2.25.1
