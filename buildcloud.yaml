@@ -1,0 +1,29 @@
+steps:
+  # Set the version from VERSION file
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: 'version'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - 'VERSION="$(cat VERSION)" && echo "version=${VERSION}" >> version.env'
+
+  # Building for Linux, Mac, and Windows using build.sh script
+  - id: 'build-multi-platform'
+    name: 'golang:1.20' # Replace with the desired Golang version
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - './build.sh'
+    env:
+      - 'GO111MODULE=on'
+      - 'CGO_ENABLED=1'
+      - '_VERSION=$$VERSION'
+
+artifacts:
+  objects:
+    location: 'gs://jess-artifacts/'
+    paths: # list of artifacts to be saved
+      - 'jess-linux-amd64'
+      - 'jess-darwin-amd64'
+      - 'jess-darwin-arm64'
+      - 'jess-windows-amd64.exe'
