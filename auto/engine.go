@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strings"
 
 	"github.com/assistant-ai/llmchat-client/client"
 	"github.com/assistant-ai/llmchat-client/db"
@@ -34,13 +35,16 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 		return err
 	}
 	counter := 0
+	err_counter := 0
 	for {
-		if counter > 6 {
+		if counter > 10 {
 			fmt.Println("stop right there")
 			break
 		}
 		counter++
-		messageToSend = SystemContext + "\n" + messageToSend
+		if !strings.Contains(messageToSend, SystemContext) {
+			messageToSend = SystemContext + "\n" + messageToSend
+		}
 		logger.Debugln(messageToSend)
 		response, err := llmClient.SendMessage(messageToSend, contextId)
 		if err != nil {
@@ -50,7 +54,12 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 		var cmd Command
 		err = json.Unmarshal([]byte(response), &cmd)
 		if err != nil {
-			return err
+			err_counter++
+			if err_counter > 3 {
+				return err
+			}
+			fmt.Println("Jess have not responded with proper JSON, but I will give her one more chancse.")
+			continue
 		}
 		if cmd.Action == "end" {
 			fmt.Println("Fuck yeah!")
