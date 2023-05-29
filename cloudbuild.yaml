@@ -1,6 +1,6 @@
 steps:
 
-
+# TODO assemble execute file fo: MacOS, Windows
   # Run the tests
   - name: 'gcr.io/cloud-builders/go:1.20'
     entrypoint: 'go'
