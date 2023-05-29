@@ -1,14 +1,22 @@
 steps:
-# Build the Linux binary
-- name: 'gcr.io/cloud-builders/go:1.20'
-  entrypoint: '/bin/sh'
-  args:
-  - '-c'
-  - 'CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-linux-amd64'
+
+
+  # Run the tests
+  - name: 'gcr.io/cloud-builders/go:1.20'
+    entrypoint: 'go'
+    args: [ 'test', '-v', './prompt' ]
+
+      # Build the Linux binary
+  - name: 'gcr.io/cloud-builders/go:1.20'
+    env: [ 'CGO_ENABLED=1', 'GOOS=linux', 'GOARCH=amd64' ]
+
+    script: 'go build -ldflags="-X main.version=$(cat VERSION)" -o jess-linux-amd64'
+
+
 
 # example of how to store artifacts
 artifacts:
   objects:
-    location: 'gs://jess-artifacts/'
+    location: 'gs://jess-artifacts/builds/linux'
     paths:
-    - 'jess-linux-amd64'
+      - 'jess-linux-amd64'
