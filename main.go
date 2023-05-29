@@ -1,22 +1,23 @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"strings"
 
+	"github.com/assistant-ai/jess/auto"
 	jess_cli "github.com/assistant-ai/jess/cli"
 	"github.com/assistant-ai/jess/commands_code"
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/commands_context"
 	"github.com/assistant-ai/jess/commands_text"
 	"github.com/assistant-ai/jess/utils"
-	"github.com/assistant-ai/llmchat-client/gpt"
-	"github.com/assistant-ai/llmchat-client/db"
 	"github.com/assistant-ai/llmchat-client/client"
+	"github.com/assistant-ai/llmchat-client/db"
+	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/assistant-ai/llmchat-client/palm"
-	"github.com/urfave/cli/v2"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli/v2"
 )
 
 var version = "unknown"
@@ -67,6 +68,7 @@ func defineCommands(config *utils.AppConfig, logger *logrus.Logger) ([]*cli.Comm
 		commands_code.DefineCodeCommand(llmClient),
 		commands_text.DefineTextCommand(llmClient),
 		commands_context.DefineServeCommand(llmClient),
+		auto.DefineAutoCommand(llmClient, logger),
 	}
 
 	return commands, nil
@@ -79,7 +81,7 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 	fmt.Printf("Model that is used for this task: %s\n", modelName)
 	logger.WithFields(logrus.Fields{
 		"config.ModelName": config.ModelName,
-	  }).Debug("Creating client")
+	}).Debug("Creating client")
 	if modelName == "gpt4" {
 		llmClient, err = gpt.NewDefaultGptClientFromFile(config.OpenAiApiKeyPath)
 		if err != nil {
@@ -88,12 +90,12 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 	} else if modelName == "gpt3" {
 		llmClient = gpt.NewGptClient(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000)
 	} else if modelName == "palm" {
-		if (config.GCPProjectId == "") {
+		if config.GCPProjectId == "" {
 			errorText := "model is PaLM but GCP Project ID is null"
 			logger.Error(errorText)
 			return nil, fmt.Errorf(errorText)
 		}
-		if (config.ServiceAccountKeyPath == "") {
+		if config.ServiceAccountKeyPath == "" {
 			errorText := "model is PaLM but GCP service acout json path is null"
 			logger.Error(errorText)
 			return nil, fmt.Errorf(errorText)
@@ -105,14 +107,14 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 	} else {
 		logger.WithFields(logrus.Fields{
 			"config.ModelName": config.ModelName,
-		  }).Fatal("No model specified, config did not parsed correctly")
+		}).Fatal("No model specified, config did not parsed correctly")
 	}
-    llmClient.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
+	llmClient.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
 
 When replying, consider information gaps and ask for clarification if needed.
 Limit this to avoid excess.
 Decide when to answer directly.
 Assume basic knowledge.
 Concise over politeness.`
-    return llmClient, nil
+	return llmClient, nil
 }
