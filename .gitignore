@@ -1,6 +1,10 @@
 
 # Files
 **/.DS_Store
+jess-linux-amd64
+jess-darwin-amd64
+jess-darwin-arm64
+jess-windows-amd64.exe
 
 
 # Folders
