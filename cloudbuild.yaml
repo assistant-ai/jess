@@ -3,26 +3,6 @@ options:
 
 steps:
 
-
-  # Download golang cache — USELESS at the moment
-#  - name: 'gcr.io/cloud-builders/gsutil'
-#    id: pull-pkg-cache
-#    waitFor: [ '-' ]
-#    dir: '/builder/home/go/'
-#    script: '
-#      echo "ls -lah" && ls -lah &&
-#      gsutil -m cp gs://jess-artifacts/build_cache/go-pkg.tar.gz /tmp/go-pkg.tar.gz &&
-#      tar -xzf /tmp/go-pkg.tar.gz || echo "Cache archive not found!" &&
-#      rm -rf /root/.cache/pip &&
-#      echo "ls -lah /builder/home/go/" && ls -lah /builder/home/go/ || true &&
-#      echo "ls -lah /builder/home/go/pkg" && ls -lah /builder/home/go/pkg || true &&
-#      touch TROLOLO.txt
-#      '
-#    volumes:
-#      - name: go-pkg
-#        path: /builder/home/go/
-
-
   # Setup dependencies
   - name: 'gcr.io/cloud-builders/go:1.20'
     id: pull-dependencies
@@ -77,20 +57,6 @@ steps:
     volumes:
       - name: go-pkg
         path: /builder/home/go/
-
-  # Save build cache — USELESS at the moment
-#  - name: 'gcr.io/cloud-builders/gsutil'
-#    id: save-pkg-cache
-#    waitFor: ['build-macOS-amd64', 'build-macOS-arm64', 'build-windows', 'build-linux']
-#    dir: '/builder/home/go/'
-#    script: '
-#      tar -czf /tmp/go-pkg.tar.gz pkg &&
-#      gsutil -m cp /tmp/go-pkg.tar.gz gs://jess-artifacts/build_cache/go-pkg.tar.gz
-#      echo "ls -lah /builder/home/go" && ls -lah /builder/home/go || true
-#      '
-#    volumes:
-#      - name: go-pkg
-#        path: /builder/home/go/
 
   # Save artifacts manually
   - name: 'gcr.io/cloud-builders/gsutil'
