@@ -635,6 +635,8 @@ github.com/assistant-ai/llmchat-client v1.0.3 h1:+WSBqYiFheD3D8YuvH3Y/15BRfq/CMz
 github.com/assistant-ai/llmchat-client v1.0.3/go.mod h1:AKf4NXpEqQBL0VqKm0hB6ukVVzAFjjUqbxhloT4gnwo=
 github.com/assistant-ai/llmchat-client v1.0.4 h1:7hRUkcCUe/lf4tr1L6SsKLD2ms04ly9WccwwX6i37Bc=
 github.com/assistant-ai/llmchat-client v1.0.4/go.mod h1:AKf4NXpEqQBL0VqKm0hB6ukVVzAFjjUqbxhloT4gnwo=
+github.com/assistant-ai/llmchat-client v1.0.5 h1:gqTPzqHTHLpJLWGgP1xbZbrEJYDuMC0Lm+NrlIbE7pM=
+github.com/assistant-ai/llmchat-client v1.0.5/go.mod h1:AKf4NXpEqQBL0VqKm0hB6ukVVzAFjjUqbxhloT4gnwo=
 github.com/b0noi/go-utils/v2 v2.2.1 h1:NYpqM7V0W88VPV+B6dXDRJDFmtIVYiN63hFM4QWlpIQ=
 github.com/b0noi/go-utils/v2 v2.2.1/go.mod h1:VRWywVwJ8quLi79WbBBVAHGZjO0Vs4m8j2Pr9qT/xUw=
 github.com/benbjohnson/clock v1.1.0/go.mod h1:J11/hYXuz8f4ySSvYwY0FKfm+ezbsZBKZxNJlLklBHA=

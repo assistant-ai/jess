@@ -83,12 +83,12 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 		"config.ModelName": config.ModelName,
 	}).Debug("Creating client")
 	if modelName == "gpt4" {
-		llmClient, err = gpt.NewDefaultGptClientFromFile(config.OpenAiApiKeyPath)
+		llmClient, err = gpt.NewDefaultGptClientFromFile(config.OpenAiApiKeyPath, nil)
 		if err != nil {
 			return nil, err
 		}
 	} else if modelName == "gpt3" {
-		llmClient = gpt.NewGptClient(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000)
+		llmClient = gpt.NewGptClient(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000, nil)
 	} else if modelName == "palm" {
 		if config.GCPProjectId == "" {
 			errorText := "model is PaLM but GCP Project ID is null"

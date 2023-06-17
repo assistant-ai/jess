@@ -15,12 +15,14 @@ func GenerateMemoryPrompt(userAsk string, memory string, prevCommands string) (s
 		OperationName   string
 		OperationResult string
 		PrevActions     string
+		NextPrompt      string
 	}{
 		userAsk,
 		memory,
 		"memory " + memory,
 		"memory saved",
 		prevCommands,
+		"what would be the next step? Highly consider ls command unless you want to ask about the file, path of which you see in the memory",
 	}
 	tmpl, err := template.New("StepPrompt").Parse(StepPromptTemplate)
 	if err != nil {
@@ -44,12 +46,14 @@ func GenerateCatPrompt(userAsk string, memory, filePath string, prevCommands str
 		OperationName   string
 		OperationResult string
 		PrevActions     string
+		NextPrompt      string
 	}{
 		userAsk,
 		memory,
 		"cat " + filePath,
 		fileContent,
 		prevCommands,
+		"next, store learning from this file that you will need to finish user task in your memory by using memory command",
 	}
 	tmpl, err := template.New("StepPrompt").Parse(StepPromptTemplate)
 	if err != nil {
@@ -82,12 +86,14 @@ func GenerateLsPrompt(userAsk string, memory string, projectRootPath string, pre
 		OperationName   string
 		OperationResult string
 		PrevActions     string
+		NextPrompt      string
 	}{
 		userAsk,
 		memory,
 		"ls",
 		listOfFilesToString(files),
 		prevCommands,
+		"what would be the next step?",
 	}
 	tmpl, err := template.New("StepPrompt").Parse(StepPromptTemplate)
 	if err != nil {
