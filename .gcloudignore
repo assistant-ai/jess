@@ -1,0 +1,16 @@
+
+
+# Ignored folders
+.idea/
+.git/
+
+# Ignored files
+*.md
+.gcloudignore
+.gitignore
+jess-linux-amd64
+jess-darwin-amd64
+jess-darwin-arm64
+jess-windows-amd64.exe
+
+# Files unignored

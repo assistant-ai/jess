@@ -1,14 +1,71 @@
-steps:
-# Build the Linux binary
-- name: 'gcr.io/cloud-builders/go:1.20'
-  entrypoint: '/bin/sh'
-  args:
-  - '-c'
-  - 'CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags="-X main.version=$(cat VERSION)" -o jess-linux-amd64'
+options:
+  machineType: E2_HIGHCPU_8 # COAST  $0.016 / build-minute
 
-# example of how to store artifacts
-artifacts:
-  objects:
-    location: 'gs://jess-artifacts/'
-    paths:
-    - 'jess-linux-amd64'
+steps:
+
+  # Setup dependencies
+  - name: 'gcr.io/cloud-builders/go:1.20'
+    id: pull-dependencies
+    waitFor: [ '-' ]
+    env: [ 'GO111MODULE=on', 'CGO_ENABLED=0' ]
+    entrypoint: 'go'
+    args: [ 'mod', 'tidy' ]
+    volumes:
+      - name: go-pkg
+        path: /builder/home/go/
+
+  # Run tests
+  - name: 'gcr.io/cloud-builders/go:1.20'
+    id: tests
+    waitFor: [ 'pull-dependencies' ]
+    env: [ 'GO111MODULE=on', 'CGO_ENABLED=0' ]
+    entrypoint: 'go'
+    args: [ 'test', '-v', './prompt' ]
+    volumes:
+      - name: go-pkg
+        path: /builder/home/go/
+
+  # Build the Linux binary
+  - name: 'gcr.io/cloud-builders/go:1.20'
+    id: build-linux
+    waitFor: [ 'tests' ]
+    env: [ 'GO111MODULE=on', 'CGO_ENABLED=1', 'GOOS=linux', 'GOARCH=amd64' ]
+    script: 'go build -ldflags="-X main.version=$(cat VERSION)" -o jess-linux-amd64 -v'
+    volumes:
+      - name: go-pkg
+        path: /builder/home/go/
+
+  # Build the macOS binaries
+  - name: 'gcr.io/cloud-builders/go:1.20'
+    id: build-macOS
+    waitFor: [ 'tests' ]
+    env: [ 'GO111MODULE=on', 'CGO_ENABLED=0', 'GOOS=darwin', 'GOARCH=amd64' ]
+    script: '
+      go build -ldflags="-X main.version=$(cat VERSION)" -o jess-darwin-amd64 -v ;
+      go build -ldflags="-X main.version=$(cat VERSION)" -o jess-darwin-arm64 -v
+      '
+    volumes:
+      - name: go-pkg
+        path: /builder/home/go/
+
+  # Build the Windows binary
+  - name: 'gcr.io/cloud-builders/go:1.20'
+    id: build-windows
+    waitFor: [ 'tests' ]
+    env: [ 'GO111MODULE=on', 'CGO_ENABLED=0', 'GOOS=windows', 'GOARCH=amd64' ]
+    script: 'go build -ldflags="-X main.version=$(cat VERSION)" -o jess-windows-amd64.exe -v'
+    volumes:
+      - name: go-pkg
+        path: /builder/home/go/
+
+  # Save artifacts manually
+  - name: 'gcr.io/cloud-builders/gsutil'
+    id: save-artifacts
+    waitFor: ['build-macOS', 'build-windows', 'build-linux']
+    script: |
+      echo "pwd" && pwd
+      echo "ls -lah" && ls -lah
+      gsutil cp jess-linux-amd64 gs://jess-artifacts/builds/linux/
+      gsutil cp jess-windows-amd64.exe gs://jess-artifacts/builds/win64/
+      gsutil cp jess-darwin-amd64 gs://jess-artifacts/builds/darwin/
+      gsutil cp jess-darwin-arm64 gs://jess-artifacts/builds/darwin/

@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/assistant-ai/llmchat-client/client"
 	"github.com/assistant-ai/llmchat-client/db"
-	"github.com/sirupsen/logrus"
-
+	"github.com/b0noi/go-utils/v2/fs"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 func StartProcess(userAsk string, rootPath string, contextId string, llmClient *client.Client, logger *logrus.Logger) error {
@@ -46,6 +47,7 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 	logger.Debug("just in case, context in DB: " + ctxFromDb)
 	prevCommnads := ""
 	messageToSend, err := GenerateLsPrompt(userAsk, memory, rootPath, prevCommnads)
+	fmt.Println("Jess is asking about ls")
 	prevCommnads = "ls"
 	if err != nil {
 		return err
@@ -60,12 +62,15 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 		counter++
 		logger.Debugln("Sending message: " + messageToSend)
 		logger.Debugln("With contextId: " + contextId)
-		response, err := llmClient.SendMessageWithContextDepth(messageToSend, contextId, 1, false)
+		response, err := llmClient.SendMessageWithContextDepth(messageToSend, contextId, 0, false)
 		if err != nil {
 			return err
 		}
 		logger.Debugln(response)
 		var cmd Command
+		if memory != "" {
+			fmt.Println("Memory: " + memory)
+		}
 		err = json.Unmarshal([]byte(response), &cmd)
 		if err != nil {
 			errEounter++
@@ -93,6 +98,15 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 			}
 		} else if cmd.Action == "cat" {
 			fmt.Println("Jess is asking about content of the file: " + cmd.Path)
+			exists, err := fs.PathExists(cmd.Path)
+			if err != nil {
+				return err
+			}
+			if !exists {
+				prevCommnads = prevCommnads + "\ncat " + cmd.Path + " - ERROR, no such file"
+				fmt.Println("but there is NO such file, so continuing")
+				continue
+			}
 			messageToSend, err = GenerateCatPrompt(userAsk, memory, cmd.Path, prevCommnads)
 			prevCommnads = prevCommnads + "\ncat " + cmd.Path
 			if err != nil {
@@ -100,7 +114,16 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 			}
 		} else if cmd.Action == "memory" {
 			fmt.Println("Jess is asking update memeory with: " + cmd.Context)
-			memory = memory + "\n" + cmd.Context
+			if memory == "" {
+				memory = cmd.Context
+			} else {
+				memoryUpdate, err := joinMemoryOldAndNew(memory, cmd.Context, llmClient)
+				if err != nil {
+					return err
+				}
+				memory = memoryUpdate
+			}
+			fmt.Println("Memory after the update: " + memory)
 			messageToSend, err = GenerateMemoryPrompt(userAsk, memory, prevCommnads)
 			prevCommnads = prevCommnads + "\nmemory"
 			if err != nil {
@@ -108,7 +131,12 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 			}
 		} else if cmd.Action == "update" || cmd.Action == "new" {
 			fmt.Println("Jess is updating file: " + cmd.Path)
-			prevCommnads = prevCommnads + "\nupdate " + cmd.Path
+			if cmd.Action == "update" {
+				prevCommnads = prevCommnads + "\nupdate " + cmd.Path
+			} else if cmd.Action == "new" {
+				prevCommnads = prevCommnads + "\nnew " + cmd.Path
+			}
+
 			err = replaceFileWithContent(cmd.Path, cmd.Context)
 			if err != nil {
 				return err
@@ -117,8 +145,17 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 			fmt.Println("WTF?!?!: " + cmd.Action)
 			break
 		}
+		time.Sleep(10000 * time.Millisecond)
 	}
 	return nil
+}
+
+func joinMemoryOldAndNew(oldMemory string, newMemory string, llmClient *client.Client) (string, error) {
+	answer, err := llmClient.SenRandomContextMessage("There are old memory and new memory, you have to join them in the way that will capture all the same informaion with all the details but result message in size should not be more than 500 words. Old memory: " + oldMemory + "\n\n new memory: " + newMemory)
+	if err != nil {
+		return "", err
+	}
+	return answer, nil
 }
 
 func tryToExtractJsonMessage(message string, cmd *Command, llmClient *client.Client) error {
