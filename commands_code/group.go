@@ -18,7 +18,7 @@ func DefineCodeCommand(llmClient *client.Client) *cli.Command {
 	}
 	return &cli.Command{
 		Name:  "code",
-		Usage: "Actions to take with code",
+		Usage: "Actions to take with code. It should make coding a bit easier. It allows to explain, refactor and ask questions about the code for specific local file(s)",
 		Subcommands: []*cli.Command{
 			questionCommand.DefineCommand(llmClient),
 			explainCommand.DefineCommand(llmClient),

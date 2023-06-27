@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/assistant-ai/jess/model"
-	"github.com/assistant-ai/llmchat-client/db"
 	"github.com/assistant-ai/llmchat-client/client"
+	"github.com/assistant-ai/llmchat-client/db"
 
 	"github.com/sirupsen/logrus"
 )
@@ -100,9 +100,9 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 		go AnimateThinking(quit)
 
 		logger.WithFields(logrus.Fields{
-			"message": newMessage,
+			"message":   newMessage,
 			"contextId": contextId,
-		  }).Debug("About to send a message")
+		}).Debug("About to send a message")
 
 		if llmClient == nil {
 			logger.Fatal("llmClient is null, this should never be the case here")
@@ -113,7 +113,7 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 			logger.Error("error from llmClient in chat dialog")
 			return err
 		}
-		
+
 		fmt.Printf("\n\n\nJess: %s\n\n\n", response)
 	}
 
@@ -123,9 +123,9 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 
 func GeneratePromptForFile(input model.FileInput) (string, error) {
 	fileTemplate := `
-I am going to give you instructions and the content of the file, you have to output new verison of the file.
+I am going to give you instructions and the content of the file, you have to output new version of the file.
 What you tell me I will directly put in the file replacing everything that I showed to you, so you have to print FULL content of the file, even if you changing small part of it.
-Do not forget to put correct new lines (\n) where required and correclty format the file.
+Do not forget to put correct new lines (\n) where required and correctly format the file.
 Here is the instructions what to do with the file: {{.UserMessage}}
 And here is file content:
 {{.FileContent}}

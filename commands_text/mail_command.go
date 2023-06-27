@@ -32,7 +32,7 @@ func (c *MailCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
 	filePaths := []string{filePath}
 	urls := []string{}
 	gDriveFiles := []string{}
-	prePrompt := "User going to provide you with mail text as well as some context to it. Figure out which mail user wants to update yourself. You should re-write mail without chaning the intent or meaning but make it as clear as possible, as concrete as possible. User might provide additional requirenments."
+	prePrompt := "User going to provide you with mail text as well as some context to it. Figure out which mail user wants to update yourself. You should re-write mail without changing the intent or meaning but make it as clear as possible, as concrete as possible. User might provide additional requirements."
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
 		return "", err
