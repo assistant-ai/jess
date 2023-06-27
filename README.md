@@ -32,22 +32,30 @@ Jessica offers the following features:
 
 1. **Dialog management**
 
-   List all dialogs:
-   ```bash
-   jess dialog -l
-   ```
+If you want to just chat with Jess you should use dialog command. Dialog command allows you to either start a new dialog or to continue existing one. To start a new dialog that is persistent just come up with the unique id and start it like this:
 
-   Continue dialog with context ID:
    ```bash
    jess dialog -c <context_id>
    ```
 
-   Show dialog with context ID:
+This either will start a new dialog with the context id, or will continue dialog with this context (if it already exist). You can start dialog without the context_id:
+
+   ```bash
+   jess dialog
+   ```
+
+In this case dialog will NOT be persistent and will dissapear right after the end. You can check all dialogs that you had in the past by using -l key:
+
+   ```bash
+   jess dialog -l
+   ```
+If you do not want to continue dialog, but want to see all the messages from it, use -s key with the context id like this:
+
    ```bash
    jess dialog -s <context_id>
    ```
+Finally, if you no longer want to have the dialogs sored, you can delete it:
 
-   Delete dialog with context ID:
    ```bash
    jess dialog -d <context_id>
    ```
