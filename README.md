@@ -54,13 +54,36 @@ If you do not want to continue dialog, but want to see all the messages from it,
    ```bash
    jess dialog -s <context_id>
    ```
+
 Finally, if you no longer want to have the dialogs sored, you can delete it:
 
    ```bash
    jess dialog -d <context_id>
    ```
 
-2. **Code processing**
+2. **Context Work**
+
+Context is something that is attached to everything you do with Jess. If you start dialog with key -c for the first time it will also store the empty context. Context is a persistent message that Jess should know about the dialog. For example, if I am going to start a dialog about coding a Go project I might set in context that I am coding in Golang, I use MacOS, project is a REST API and I deploy it on GCP.
+
+Show context message:
+
+   ```bash
+   jess context -s <context_id>
+   ```
+
+Show list of contexts:
+
+   ```bash
+   jess context -l
+   ```
+
+Delete context. IMPORTANT: deleteing context will delete a dialog attached to it with all messages in it:
+
+   ```bash
+   jess context -d <context_id>
+   ```
+
+3. **Code processing**
 
    Explain code files in English:
    ```bash
