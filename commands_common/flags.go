@@ -40,7 +40,7 @@ func ContextFlag() cli.Flag {
 	return &cli.StringFlag{
 		Name:    "context",
 		Aliases: []string{"c"},
-		Usage:   "context id to store this to",
+		Usage:   "Context id to store this to",
 	}
 }
 
@@ -48,7 +48,7 @@ func OutputFlag() cli.Flag {
 	return &cli.StringFlag{
 		Name:    "output",
 		Aliases: []string{"o"},
-		Usage:   "output file path, if not specificed stdout will be used",
+		Usage:   "Output file path, by default output will be printed to terminal",
 	}
 }
 

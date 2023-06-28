@@ -9,7 +9,7 @@ import (
 func DefineServeCommand(llmClient *client.Client) *cli.Command {
 	return &cli.Command{
 		Name:   "serve",
-		Usage:  "start REST service",
+		Usage:  "Start REST service",
 		Action: handleServeAction(llmClient),
 		Flags:  serveFlags(),
 	}

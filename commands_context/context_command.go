@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	jess_cli "github.com/assistant-ai/jess/cli"
-	"github.com/assistant-ai/llmchat-client/db"
 	"github.com/assistant-ai/llmchat-client/client"
+	"github.com/assistant-ai/llmchat-client/db"
 	"github.com/urfave/cli/v2"
 )
 
@@ -43,27 +43,27 @@ func contextFlags() []cli.Flag {
 		&cli.BoolFlag{
 			Name:    "list",
 			Aliases: []string{"l"},
-			Usage:   "list all dialogs",
+			Usage:   "List all dialogs",
 		},
 		&cli.StringFlag{
 			Name:    "context",
 			Aliases: []string{"c"},
-			Usage:   "continue dialog with the contextn id",
+			Usage:   "Continue dialog with the contextn id",
 		},
 		&cli.BoolFlag{
 			Name:    "show",
 			Aliases: []string{"s"},
-			Usage:   "show dialog with the context id",
+			Usage:   "Show dialog with the context id",
 		},
 		&cli.BoolFlag{
 			Name:    "delete",
 			Aliases: []string{"d"},
-			Usage:   "delete dialog with the context id",
+			Usage:   "Delete dialog with the context id",
 		},
 		&cli.StringFlag{
 			Name:    "prompt",
 			Aliases: []string{"p"},
-			Usage:   "set dialog context prompt to this value",
+			Usage:   "Set dialog context prompt to this value",
 		},
 	}
 }

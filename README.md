@@ -12,11 +12,44 @@ To install, first, clone the repository and navigate to the project directory:
 ```bash
 curl -sSL https://raw.githubusercontent.com/assistant-ai/jess/master/install.sh | bash
 ```
+During instalation on Linux script will create folder `~/.jess/`. 
+this folder is used for storing:
+ - `config.yaml ` - file for basic configuration (model type, token size limit, custom api storage). This file is not created automatically. Config used for overwriting default values.
+ - `open-ai.key` - file for storing OPENAI api key as a plain text. This file is not created automatically.
+
+Default configuration: 
+- Model: `gpt3`
+- log_level: `INFO`
+- api key storage: `~/.jess/.open-ai.key`
+
+Example for configuration file:
+
+```yaml
+model: "gpt3"
+log_level: "INFO"
+openai:
+  openai_api_key_path: "/custom_folder/.open-ai.key"
+```
+
+
+
+
 
 ## Requirements
 
 - Golang >= 1.15
-- OpenAI API Key (stored in `~/.open-ai.key` file)
+- You should have API key from OPEN AI (it could be found using link [OPEN AI API](https://platform.openai.com/account/api-keys)). Put it as a plain text to default key storage file:
+
+  - for linux:`~/.jess/.open-ai.key` 
+ 
+    ```bash
+    echo "YOUR_OPEN_AI_API_KEY" > ~/.jess/.open-ai.key
+    ```
+  - for windows: TODO
+    ```powershell
+    echo TODO
+    ```
+
 
 ## Features
 
@@ -38,7 +71,7 @@ If you want to just chat with Jess you should use dialog command. Dialog command
    jess dialog -c <context_id>
    ```
 
-This either will start a new dialog with the context id, or will continue dialog with this context (if it already exist). You can start dialog without the context_id:
+This either will start a new dialog with the context id, or will continue dialog with this context (if it already existed). You can start dialog without the context_id:
 
    ```bash
    jess dialog
