@@ -10,11 +10,15 @@ func DefineTextCommand(llmClient *client.Client) *cli.Command {
 	mailCommand := commands_common.JessCommand{
 		Command: &MailCommand{},
 	}
+	grammarCommand := commands_common.JessCommand{
+		Command: &GrammarCommand{},
+	}
 	return &cli.Command{
 		Name:  "text",
 		Usage: "Actions to take with text",
 		Subcommands: []*cli.Command{
 			mailCommand.DefineCommand(llmClient),
+			grammarCommand.DefineCommand(llmClient),
 		},
 	}
 }

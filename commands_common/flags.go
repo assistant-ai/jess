@@ -6,7 +6,8 @@ func PromptFlag() cli.Flag {
 	return &cli.StringFlag{
 		Name:     "prompt",
 		Aliases:  []string{"p"},
-		Usage:    "prompt to suppy with file",
+		Usage:    "[Optional] prompt to supply with file",
+		Value:    "",
 		Required: true,
 	}
 }
@@ -15,7 +16,7 @@ func InputFilesFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    "input",
 		Aliases: []string{"i"},
-		Usage:   "input files",
+		Usage:   "[Optional] Input files",
 	}
 }
 
@@ -23,7 +24,7 @@ func UrlsFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    "url",
 		Aliases: []string{"u"},
-		Usage:   "URL to download, extract text and feed to the GPT model",
+		Usage:   "[Optional] URL to download, extract text and feed to the GPT model",
 	}
 }
 
@@ -31,7 +32,7 @@ func InputFileFlag() cli.Flag {
 	return &cli.StringFlag{
 		Name:     "input",
 		Aliases:  []string{"i"},
-		Usage:    "input file",
+		Usage:    "[Mandatory] Input file",
 		Required: true,
 	}
 }
@@ -40,7 +41,7 @@ func ContextFlag() cli.Flag {
 	return &cli.StringFlag{
 		Name:    "context",
 		Aliases: []string{"c"},
-		Usage:   "Context id to store this to",
+		Usage:   "[Optional] Context id to store this to",
 	}
 }
 
@@ -48,7 +49,7 @@ func OutputFlag() cli.Flag {
 	return &cli.StringFlag{
 		Name:    "output",
 		Aliases: []string{"o"},
-		Usage:   "Output file path, by default output will be printed to terminal",
+		Usage:   "[Optional] Output file path, by default output will be printed to terminal",
 	}
 }
 
@@ -56,6 +57,6 @@ func GoogleDriveFilesFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    "gdrive",
 		Aliases: []string{"g", "gd"},
-		Usage:   "Google Drive file ID",
+		Usage:   "[Optional] Google Drive file ID",
 	}
 }

@@ -88,7 +88,7 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 			return nil, err
 		}
 	} else if modelName == "gpt3" {
-		llmClient = gpt.NewGptClient(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000, nil)
+		llmClient, _ = gpt.NewGptClientFromFile(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000, nil)
 	} else if modelName == "palm" {
 		if config.GCPProjectId == "" {
 			errorText := "model is PaLM but GCP Project ID is null"
