@@ -45,6 +45,7 @@ echo "architecture: $architecture"
 
 # executing with handling error
 (
+  go mod tidy &&
   build_app "$os" $architecture "jess-${os}-${architecture}" &&
   # print with green color
   echo -e "\033[32mSUCCESS building for $os on $architecture \033[m"
