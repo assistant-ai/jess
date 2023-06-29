@@ -28,7 +28,7 @@ Example for configuration file:
 model: "gpt3"
 log_level: "INFO"
 openai:
-  openai_api_key_path: "/custom_folder/.open-ai.key"
+  openai_api_key_path: "/custom_folder/open-ai.key"
 ```
 
 
@@ -40,10 +40,10 @@ openai:
 - Golang >= 1.15
 - You should have API key from OPEN AI (it could be found using link [OPEN AI API](https://platform.openai.com/account/api-keys)). Put it as a plain text to default key storage file:
 
-  - for linux:`~/.jess/.open-ai.key` 
+  - for linux:`~/.jess/open-ai.key` 
  
     ```bash
-    echo "YOUR_OPEN_AI_API_KEY" > ~/.jess/.open-ai.key
+    echo "YOUR_OPEN_AI_API_KEY" > ~/.jess/open-ai.key
     ```
   - for windows: TODO
     ```powershell
