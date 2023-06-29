@@ -4,10 +4,10 @@ import "github.com/urfave/cli/v2"
 
 func PromptFlag() cli.Flag {
 	return &cli.StringFlag{
-		Name:     "prompt",
-		Aliases:  []string{"p"},
-		Usage:    "prompt to suppy with file",
-		Required: true,
+		Name:    "prompt",
+		Aliases: []string{"p"},
+		Usage:   "[optional] prompt to supply with file",
+		Value:   "",
 	}
 }
 
