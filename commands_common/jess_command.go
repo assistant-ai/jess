@@ -1,8 +1,9 @@
 package commands_common
 
 import (
-	"fmt"
+	"github.com/assistant-ai/jess/utils"
 	"os"
+	"strings"
 
 	jess_cli "github.com/assistant-ai/jess/cli"
 	"github.com/assistant-ai/llmchat-client/client"
@@ -50,7 +51,14 @@ func (c *JessCommand) handleAction(llmClient *client.Client) func(cliContext *cl
 				return err
 			}
 		} else {
-			fmt.Println("\n\n" + answer)
+			//fmt.Println("\n\n" + answer)
+			//TODO wrap changes with a function
+
+			answer = strings.Replace(answer, "File/Url List:", "\033[33mFile/Url List:\033[32m", -1)
+			answer = strings.Replace(answer, "File/Url path:", "\033[33mFile/Url path:\033[32m", -1)
+			answer = strings.Replace(answer, "User Prompt:", "\033[33mUser Prompt:\033[32m", -1)
+			answer = strings.Replace(answer, "Content:", "\033[33mUpdated content:\033[32m", -1)
+			utils.Println_green("\n\n" + answer)
 		}
 		return nil
 	}

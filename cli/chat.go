@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/assistant-ai/jess/utils"
 	"os"
 	"text/template"
 	"time"
@@ -23,7 +24,8 @@ func AnimateThinking(quit chan bool) {
 		case <-quit:
 			return
 		default:
-			fmt.Printf("\rThinking %c", spinChars[i])
+			//fmt.Printf("\rThinking %c", spinChars[i])
+			utils.Printf_thinking_yellow(spinChars[i])
 			time.Sleep(100 * time.Millisecond)
 
 			i++
@@ -86,7 +88,8 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 	ShowMessages(messages)
 
 	for {
-		fmt.Print("You: ")
+		//fmt.Print("You: ")
+		utils.Println_cyan(">>> You:")
 		if !scanner.Scan() {
 			return fmt.Errorf("Error reading input")
 		}
@@ -114,7 +117,9 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 			return err
 		}
 
-		fmt.Printf("\n\n\nJess: %s\n\n\n", response)
+		//fmt.Printf("\n\n\nJess: %s\n\n\n", response)
+		responseMsg := "\n Jess: " + response
+		utils.Println_purple(responseMsg)
 	}
 
 	fmt.Println("Goodbye!")
