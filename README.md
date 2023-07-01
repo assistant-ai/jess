@@ -20,7 +20,7 @@ this folder is used for storing:
 Default configuration: 
 - Model: `gpt3`
 - log_level: `INFO`
-- api key storage: `~/.jess/.open-ai.key`
+- api key storage: `~/.jess/open-ai.key`
 
 Example for configuration file:
 
@@ -45,10 +45,12 @@ openai:
     ```bash
     echo "YOUR_OPEN_AI_API_KEY" > ~/.jess/open-ai.key
     ```
-  - for windows: TODO
+  - for windows: 
     ```powershell
-    echo TODO
+    echo YOUR_OPEN_AI_API_KEY > ~/.jess/open-ai.key 
+    # without quotes
     ```
+     store key to (user home directory , which usually c/Users/UserName) . so folder should be like this: `C:\Users\UserName\.jess\open-ai.key`
 
 
 ## Features
