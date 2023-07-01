@@ -10,7 +10,49 @@ build_app() {
 
 VERSION=$(cat VERSION)
 
-build_app "linux"   "amd64" "jess-linux-amd64"
-build_app "darwin"  "amd64" "jess-darwin-amd64"
-build_app "darwin"  "arm64" "jess-darwin-arm64"
-build_app "windows" "amd64" "jess-windows-amd64.exe"
+architecture=""
+case $(uname -m) in
+    i386)   architecture="386" ;;
+    i686)   architecture="386" ;;
+    x86_64) architecture="amd64" ;;
+    arm)    dpkg --print-architecture | grep -q "arm64" && architecture="arm64" || architecture="arm" ;;
+esac
+
+os=""
+case "$OSTYPE" in
+  darwin*)  os="darwin" ;;
+  linux*)   os="LINUX" ;;
+  msys*)    os="windows" ;;
+  cygwin*)  os="windows" ;;
+  *)        os="unknown: $OSTYPE" ;;
+esac
+
+## check if os is windows and exit
+if [ "$os" == "windows" ]; then
+  echo -e "\033[31mERROR: Windows is not supported by this builder \033[m"
+  echo "try to use build.ps1 instead of build.sh"
+  exit 1
+fi
+
+echo "---------------------------------------------"
+echo "building JESSICA:"
+echo "version: $VERSION"
+echo "OS: $os"
+echo "architecture: $architecture"
+
+
+
+
+# executing with handling error
+(
+  go mod tidy &&
+  build_app "$os" $architecture "jess-${os}-${architecture}" &&
+  # print with green color
+  echo -e "\033[32mSUCCESS building for $os on $architecture \033[m"
+) || {
+  #  print with red color
+  echo -e "\033[31mERROR while building for $os on $architecture \033[m"
+  echo ""
+  exit 1
+  }
+
