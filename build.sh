@@ -14,8 +14,14 @@ architecture=""
 case $(uname -m) in
     i386)   architecture="386" ;;
     i686)   architecture="386" ;;
-    x86_64) architecture="amd64" ;;
-    arm)    dpkg --print-architecture | grep -q "arm64" && architecture="arm64" || architecture="arm" ;;
+    x86_64)
+      if [ $os = "darwin" ]; then
+        architecture="arm64"
+      else
+        architecture="amd64"
+      fi
+      ;;
+    arm64)    architecture="arm64" ;; # handle ARM macs
 esac
 
 os=""
