@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/assistant-ai/jess/commands_config"
 	"os"
 	"strings"
 
@@ -67,6 +68,8 @@ func defineCommands(config *utils.AppConfig, logger *logrus.Logger) ([]*cli.Comm
 		processCommand.DefineCommand(llmClient),
 		commands_code.DefineCodeCommand(llmClient),
 		commands_text.DefineTextCommand(llmClient),
+		commands_config.DefineTestCommand(llmClient, config),
+		commands_config.DefineConfig1Command(config),
 		commands_context.DefineServeCommand(llmClient),
 		auto.DefineAutoCommand(llmClient, logger),
 	}
@@ -107,7 +110,10 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 	} else {
 		logger.WithFields(logrus.Fields{
 			"config.ModelName": config.ModelName,
-		}).Fatal("No model specified, config did not parsed correctly")
+		}).Error("Model is not specified")
+		utils.Println_red("Try to use next command to fix model error")
+		utils.Println_yellow("jess config -c 'id'")
+		return nil, nil
 	}
 	llmClient.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
 

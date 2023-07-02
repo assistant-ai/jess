@@ -51,9 +51,7 @@ func (c *JessCommand) handleAction(llmClient *client.Client) func(cliContext *cl
 				return err
 			}
 		} else {
-			//fmt.Println("\n\n" + answer)
 			//TODO wrap changes with a function
-
 			answer = strings.Replace(answer, "File/Url List:", "\033[33mFile/Url List:\033[32m", -1)
 			answer = strings.Replace(answer, "File/Url path:", "\033[33mFile/Url path:\033[32m", -1)
 			answer = strings.Replace(answer, "User Prompt:", "\033[33mUser Prompt:\033[32m", -1)
