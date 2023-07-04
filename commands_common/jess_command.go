@@ -2,6 +2,7 @@ package commands_common
 
 import (
 	"github.com/assistant-ai/jess/utils"
+	"github.com/prometheus/common/log"
 	"os"
 	"strings"
 
@@ -43,6 +44,7 @@ func (c *JessCommand) handleAction(llmClient *client.Client) func(cliContext *cl
 		answer, err := llmClient.SendMessageWithContextDepth(finalPrompt, context, 0, false)
 		quit <- true
 		if err != nil {
+			log.Errorf("Error while sending message: %v", err)
 			return err
 		}
 		if output != "" {
@@ -56,7 +58,7 @@ func (c *JessCommand) handleAction(llmClient *client.Client) func(cliContext *cl
 			answer = strings.Replace(answer, "File/Url path:", "\033[33mFile/Url path:\033[32m", -1)
 			answer = strings.Replace(answer, "User Prompt:", "\033[33mUser Prompt:\033[32m", -1)
 			answer = strings.Replace(answer, "Content:", "\033[33mUpdated content:\033[32m", -1)
-			utils.Println_green("\n\n" + answer)
+			utils.PrintlnGreen("\n\n" + answer)
 		}
 		return nil
 	}

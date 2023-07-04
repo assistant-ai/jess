@@ -12,12 +12,12 @@ import (
 
 const configFilePath = "/Users/nik/.jess/config.yaml"
 
-func DefineConfig1Command(config *utils.AppConfig) *cli.Command {
+func DefineConfigCommand(config *utils.AppConfig) *cli.Command {
 	return &cli.Command{
 		Name:   "config",
 		Usage:  "Check if everything is configured fine and you have access to all required resources",
 		Flags:  ConfigFlags(),
-		Action: ConfigAction(config),
+		Action: ConfigAction(),
 	}
 }
 
@@ -29,27 +29,27 @@ func ConfigFlags() []cli.Flag {
 }
 
 // TODO rebuild this command after changing promt builder
-func ConfigAction(config *utils.AppConfig) func(c *cli.Context) error {
+func ConfigAction() func(c *cli.Context) error {
 	return func(c *cli.Context) error {
 		setupValue("model")
 		setupValue("openai_api_key_path")
 		setupValue("log_level")
-		utils.Println_yellow("configuration changed successfully")
+		utils.PrintlnYellow("configuration changed successfully")
 		os.Exit(0)
 		return nil
 	}
 }
 
-func setupValue(configKey string) error {
+func setupValue(configKey string) {
 	msgForInput := "Please print new " + strings.ToUpper(configKey) + ` you want to use: 
  [ for skip press enter ]`
 
-	utils.Println_cyan(msgForInput)
-	utils.Print_cyan_invite()
+	utils.PrintlnCyan(msgForInput)
+	utils.PrintCyanInvite()
 	scanner := bufio.NewScanner(os.Stdin)
 
 	if !scanner.Scan() {
-		return nil
+		println("error while reading input")
 	}
 	newValue := scanner.Text()
 	if newValue != "" {
@@ -59,5 +59,4 @@ func setupValue(configKey string) error {
 		viper.WriteConfig()
 	}
 
-	return nil
 }

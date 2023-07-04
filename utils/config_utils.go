@@ -30,10 +30,10 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 	jessServiceAccountFilePath := filepath.Join(folderPath, "jess-service-account.json")
 
 	if !IfFileWithAPiKeyExists(openAiApiKeyFilePath) {
-		Println_red("OpenAI API key file not found at " + openAiApiKeyFilePath)
-		Println_red("Please create a file with your OpenAI API key at")
-		Println_red("You can get your API key at https://beta.openai.com/account/api-keys")
-		Println_red("Then run `echo YOUR_OPEN_AI_API_TOKEN > " + openAiApiKeyFilePath + "`")
+		PrintlnRed("OpenAI API key file not found at " + openAiApiKeyFilePath)
+		PrintlnRed("Please create a file with your OpenAI API key at")
+		PrintlnRed("You can get your API key at https://beta.openai.com/account/api-keys")
+		PrintlnRed("Then run `echo YOUR_OPEN_AI_API_TOKEN > " + openAiApiKeyFilePath + "`")
 		// stop executing program
 		os.Exit(1)
 	}
@@ -49,7 +49,7 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 		viper.SetDefault("model", "GPT3")
 		viper.SetDefault("gcp.gcp_project_id", "")
 		viper.SetDefault("log_level", "INFO")
-		Println_yellow("Config file created at " + configPath)
+		PrintlnYellow("Config file created at " + configPath)
 	}
 
 	viper.SetConfigFile(configPath)

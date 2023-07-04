@@ -13,7 +13,7 @@ To install, first, clone the repository and navigate to the project directory:
 curl -sSL https://raw.githubusercontent.com/assistant-ai/jess/master/install.sh | bash
 ```
 
-It is possible to check that eeverything was installed correctly by running:
+It is possible to check that everything was installed correctly by running:
 
 ```bash
 jess config test test -c "UUID"
@@ -56,7 +56,7 @@ openai:
 2. Using config command:
 
 ```bash
-jess config config -c "UUID"
+jess config -c "UUID"
 ```
 it will provide you with interactive CLI for configuration. 
 It will allow you to change model type, log level and openai api key storage path.

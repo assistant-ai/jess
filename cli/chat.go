@@ -24,7 +24,7 @@ func AnimateThinking(quit chan bool) {
 		case <-quit:
 			return
 		default:
-			utils.Printf_thinking_yellow(spinChars[i])
+			utils.PrintfThinkingYellow(spinChars[i])
 			time.Sleep(100 * time.Millisecond)
 
 			i++
@@ -87,7 +87,7 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 	ShowMessages(messages)
 
 	for {
-		utils.Println_cyan(">>> You:")
+		utils.PrintlnCyan(">>> You:")
 		if !scanner.Scan() {
 			return fmt.Errorf("Error reading input")
 		}
@@ -116,7 +116,7 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 		}
 
 		responseMsg := "\n Jess: " + response
-		utils.Println_purple(responseMsg)
+		utils.PrintlnPurple(responseMsg)
 	}
 
 	fmt.Println("Goodbye!")
