@@ -12,6 +12,21 @@ To install, first, clone the repository and navigate to the project directory:
 ```bash
 curl -sSL https://raw.githubusercontent.com/assistant-ai/jess/master/install.sh | bash
 ```
+
+It is possible to check that everything was installed correctly by running:
+
+```bash
+jess config test test -c "UUID"
+```
+
+to get help use command:
+
+```bash
+jess --help
+```
+
+
+
 During instalation on Linux script will create folder `~/.jess/`. 
 this folder is used for storing:
  - `config.yaml ` - file for basic configuration (model type, token size limit, custom api storage). This file is not created automatically. Config used for overwriting default values.
@@ -22,6 +37,13 @@ Default configuration:
 - log_level: `INFO`
 - api key storage: `~/.jess/open-ai.key`
 
+
+
+## Configuring
+
+There are few ways to configure Jessica CLI:
+1. manually in config file that is located in `~/.jess/config.yaml`
+
 Example for configuration file:
 
 ```yaml
@@ -31,9 +53,20 @@ openai:
   openai_api_key_path: "/custom_folder/open-ai.key"
 ```
 
+2. Using config command:
 
+```bash
+jess config -c "UUID"
+```
+it will provide you with interactive CLI for configuration. 
+It will allow you to change model type, log level and openai api key storage path.
 
+in case you want clean your context storage and start from scratch you can delete db file. this file stored in `~/.llmchat-client`.
+for deliting just use command:
 
+```bash
+rm ~/.llmchat-client
+```
 
 ## Requirements
 

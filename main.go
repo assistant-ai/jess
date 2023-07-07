@@ -1,7 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"github.com/assistant-ai/jess/commands_config"
+	"log"
 	"os"
 	"strings"
 
@@ -67,6 +70,8 @@ func defineCommands(config *utils.AppConfig, logger *logrus.Logger) ([]*cli.Comm
 		processCommand.DefineCommand(llmClient),
 		commands_code.DefineCodeCommand(llmClient),
 		commands_text.DefineTextCommand(llmClient),
+		commands_config.DefineTestCommand(llmClient, config),
+		commands_config.DefineConfigCommand(config),
 		commands_context.DefineServeCommand(llmClient),
 		auto.DefineAutoCommand(llmClient, logger),
 	}
@@ -83,12 +88,18 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 		"config.ModelName": config.ModelName,
 	}).Debug("Creating client")
 	if modelName == "gpt4" {
+		utils.PrintlnRed("GPT-4 was selected model")
 		llmClient, err = gpt.NewDefaultGptClientFromFile(config.OpenAiApiKeyPath, nil)
 		if err != nil {
+			log.Fatalf("Error while creating client: %s", err.Error())
 			return nil, err
 		}
 	} else if modelName == "gpt3" {
-		llmClient, _ = gpt.NewGptClientFromFile(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000, nil)
+		llmClient, err = gpt.NewGptClientFromFile(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000, nil)
+		if err != nil {
+			log.Fatalf("Error while creating client: %s", err.Error())
+			return nil, err
+		}
 	} else if modelName == "palm" {
 		if config.GCPProjectId == "" {
 			errorText := "model is PaLM but GCP Project ID is null"
@@ -107,7 +118,10 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 	} else {
 		logger.WithFields(logrus.Fields{
 			"config.ModelName": config.ModelName,
-		}).Fatal("No model specified, config did not parsed correctly")
+		}).Error("Model is not specified")
+		utils.PrintlnRed("Try to use next command to fix model error")
+		utils.PrintlnYellow("jess config -c 'id'")
+		return nil, errors.New("model is not specified")
 	}
 	llmClient.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
 

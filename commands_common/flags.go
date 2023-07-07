@@ -6,7 +6,7 @@ func PromptFlag() cli.Flag {
 	return &cli.StringFlag{
 		Name:     "prompt",
 		Aliases:  []string{"p"},
-		Usage:    "[Optional] prompt to supply with file",
+		Usage:    "[Mandatory] prompt to supply with file",
 		Value:    "",
 		Required: true,
 	}
