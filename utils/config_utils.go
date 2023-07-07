@@ -44,11 +44,13 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 			return nil, err
 		}
 		defer file.Close()
+		viper.SetConfigFile(configPath)
 		viper.SetDefault("openai.openai_api_key_path", openAiApiKeyFilePath)
 		viper.SetDefault("gcp.service_account_key_path", jessServiceAccountFilePath)
 		viper.SetDefault("model", "GPT3")
 		viper.SetDefault("gcp.gcp_project_id", "")
 		viper.SetDefault("log_level", "INFO")
+		viper.WriteConfig()
 		PrintlnYellow("Config file created at " + configPath)
 	}
 
