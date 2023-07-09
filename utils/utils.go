@@ -25,11 +25,13 @@ func ExtractTextFromURL(url string) (string, error) {
 	return readableText, nil
 }
 
+// TODO fix error handling and rerurnig erors
 func IfFileWithAPiKeyExists(apiKeyPath string) bool {
 	exists, _ := fs.PathExists(apiKeyPath)
 	return exists
 }
 
+// TODO fix error handling and rerurnig erors
 func IfConfigFileExists(configPath string) bool {
 	exists, err := fs.PathExists(configPath)
 	if err != nil {

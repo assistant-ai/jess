@@ -31,19 +31,19 @@ func ConfigFlags() []cli.Flag {
 // TODO rebuild this command after changing promt builder
 func ConfigAction() func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		setupValue("model")
-		setupValue("openai_api_key_path")
-		setupValue("log_level")
-		utils.PrintlnYellow("configuration changed successfully")
+		listOfModels := utils.GetListOfModels()
+		msgForSetupModels := "[IMPORTANT] Use only next models: \n" + strings.Join(listOfModels, "\n")
+		setupValue("model", msgForSetupModels)
+		setupValue("openai_api_key_path", "")
+		setupValue("log_level", "")
+		utils.PrintlnGreen("Configuration changed successfully")
 		os.Exit(0)
 		return nil
 	}
 }
 
-func setupValue(configKey string) {
-	msgForInput := "Please print new " + strings.ToUpper(configKey) + ` you want to use: 
- [ for skip press enter ]`
-
+func setupValue(configKey string, msg string) {
+	msgForInput := msg + "\nPlease print new " + strings.ToUpper(configKey) + " you want to use:\n [ for skip press enter ]"
 	utils.PrintlnCyan(msgForInput)
 	utils.PrintCyanInvite()
 	scanner := bufio.NewScanner(os.Stdin)
@@ -58,5 +58,4 @@ func setupValue(configKey string) {
 		viper.Set(configKey, newValue)
 		viper.WriteConfig()
 	}
-
 }
