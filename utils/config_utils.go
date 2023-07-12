@@ -29,15 +29,6 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 	// TODO add instructions on how to store and add it
 	jessServiceAccountFilePath := filepath.Join(folderPath, "jess-service-account.json")
 
-	if !IfFileWithAPiKeyExists(openAiApiKeyFilePath) {
-		PrintlnRed("OpenAI API key file not found at " + openAiApiKeyFilePath)
-		PrintlnRed("Please create a file with your OpenAI API key at")
-		PrintlnRed("You can get your API key at https://beta.openai.com/account/api-keys")
-		PrintlnRed("Then run `echo YOUR_OPEN_AI_API_TOKEN > " + openAiApiKeyFilePath + "`")
-		// stop executing program
-		os.Exit(1)
-	}
-
 	if !IfConfigFileExists(configPath) {
 		file, err := os.Create(configPath)
 		if err != nil {
@@ -66,6 +57,18 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 		ModelName:             viper.GetString("model"),
 		GCPProjectId:          viper.GetString("gcp.gcp_project_id"),
 		LogLevel:              viper.GetString("log_level"),
+	}
+
+	if appConfig.OpenAiApiKeyPath != openAiApiKeyFilePath {
+		openAiApiKeyFilePath = appConfig.OpenAiApiKeyPath
+	}
+
+	if !IfFileWithAPiKeyExists(openAiApiKeyFilePath) {
+		PrintlnRed("OpenAI API key file not found at " + openAiApiKeyFilePath)
+		PrintlnRed("Please create a file with your OpenAI API key at")
+		PrintlnRed("You can get your API key at https://beta.openai.com/account/api-keys")
+		PrintlnRed("Then run `echo YOUR_OPEN_AI_API_TOKEN > " + openAiApiKeyFilePath + "`")
+		os.Exit(1)
 	}
 
 	return appConfig, nil
