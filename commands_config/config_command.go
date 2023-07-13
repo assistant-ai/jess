@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/utils"
+	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -31,7 +32,7 @@ func ConfigFlags() []cli.Flag {
 // TODO rebuild this command after changing promt builder
 func ConfigAction() func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		listOfModels := utils.GetListOfModels()
+		listOfModels := gpt.GetListOfModels()
 		msgForSetupModels := "[IMPORTANT] Use only next models: \n" + strings.Join(listOfModels, "\n")
 		setupValue("model", msgForSetupModels)
 		setupValue("openai_api_key_path", "")

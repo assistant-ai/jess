@@ -85,11 +85,10 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 		"config.ModelName": config.ModelName,
 	}).Debug("Creating client")
 
-	listOfValidModels := utils.GetListOfModels()
-	isModelValid := utils.IsModelGPTValid(modelName, listOfValidModels)
+	isModelValid := gpt.IsModelGPTValid(modelName)
 
 	if isModelValid {
-		models := utils.GetModels()
+		models := gpt.GetLlmClientGptModels()
 		if err != nil {
 			fmt.Println("Error:", err)
 			return nil, errors.New("Error while converting maxTokens to int")
