@@ -3,15 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/assistant-ai/jess/commands_config"
-	"log"
-	"os"
-	"strings"
-
 	"github.com/assistant-ai/jess/auto"
 	jess_cli "github.com/assistant-ai/jess/cli"
 	"github.com/assistant-ai/jess/commands_code"
 	"github.com/assistant-ai/jess/commands_common"
+	"github.com/assistant-ai/jess/commands_config"
 	"github.com/assistant-ai/jess/commands_context"
 	"github.com/assistant-ai/jess/commands_text"
 	"github.com/assistant-ai/jess/utils"
@@ -21,6 +17,7 @@ import (
 	"github.com/assistant-ai/llmchat-client/palm"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
+	"os"
 )
 
 var version = "unknown"
@@ -82,25 +79,28 @@ func defineCommands(config *utils.AppConfig, logger *logrus.Logger) ([]*cli.Comm
 func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client, error) {
 	var llmClient *client.Client
 	var err error
-	modelName := strings.ToLower(config.ModelName)
+	modelName := config.ModelName
 	fmt.Printf("Model that is used for this task: %s\n", modelName)
 	logger.WithFields(logrus.Fields{
 		"config.ModelName": config.ModelName,
 	}).Debug("Creating client")
-	if modelName == "gpt4" {
-		utils.PrintlnRed("GPT-4 was selected model")
-		llmClient, err = gpt.NewDefaultGptClientFromFile(config.OpenAiApiKeyPath, nil)
+
+	isModelValid := gpt.IsModelGPTValid(modelName)
+
+	if isModelValid {
+		models := gpt.GetLlmClientGptModels()
 		if err != nil {
-			log.Fatalf("Error while creating client: %s", err.Error())
-			return nil, err
+			fmt.Println("Error:", err)
+			return nil, errors.New("Error while converting maxTokens to int")
 		}
-	} else if modelName == "gpt3" {
-		llmClient, err = gpt.NewGptClientFromFile(config.OpenAiApiKeyPath, 3, gpt.ModelGPT3Turbo, db.RandomContextId, 4000, nil)
+		gptModel := models[modelName]
+		llmClient, err = gpt.NewGptClientFromFile(config.OpenAiApiKeyPath, 3, (*gpt.GPTModel)(gptModel), db.RandomContextId, models[modelName].MaxTokens, nil)
 		if err != nil {
-			log.Fatalf("Error while creating client: %s", err.Error())
+			logger.Error("Error while creating client: %s", err.Error())
 			return nil, err
 		}
 	} else if modelName == "palm" {
+		// TODO check if model is valid for GCP project
 		if config.GCPProjectId == "" {
 			errorText := "model is PaLM but GCP Project ID is null"
 			logger.Error(errorText)
