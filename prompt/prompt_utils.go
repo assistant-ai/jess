@@ -2,8 +2,6 @@ package prompt
 
 import (
 	"io/ioutil"
-	"os"
-	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -75,8 +73,8 @@ func FilePromptBuilder(prePrompt string, filePaths []string, urls []string, goog
 	}
 
 	if len(googleDriveFiles) != 0 {
-		serviceAccountKeyFilePath := filepath.Join(os.Getenv("HOME"), ".jess/service-account.json")
-		gDriveHelper, err := utils.NewGoogleDriveHelper(serviceAccountKeyFilePath)
+		pathToServiceAccount := utils.GetConfig().ServiceAccountKeyPath
+		gDriveHelper, err := utils.NewGoogleDriveHelper(pathToServiceAccount)
 		if err != nil {
 			return "", err
 		}

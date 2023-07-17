@@ -37,6 +37,7 @@ func ConfigAction() func(c *cli.Context) error {
 		setupValue("model", msgForSetupModels)
 		setupValue("openai_api_key_path", "")
 		setupValue("log_level", "")
+		setupValue("gcp.service_account_key_path", "")
 		utils.PrintlnGreen("Configuration changed successfully")
 		os.Exit(0)
 		return nil

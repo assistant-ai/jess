@@ -7,6 +7,7 @@ import (
 	"github.com/prometheus/common/log"
 	"net/http"
 	"os"
+	"regexp"
 )
 
 func ExtractTextFromURL(url string) (string, error) {
@@ -25,19 +26,27 @@ func ExtractTextFromURL(url string) (string, error) {
 	return readableText, nil
 }
 
-// TODO fix error handling and rerurnig erors
+// TODO fix error handling and returnig erorrs
 func IfFileWithAPiKeyExists(apiKeyPath string) bool {
 	exists, _ := fs.PathExists(apiKeyPath)
 	return exists
 }
 
-// TODO fix error handling and rerurnig erors
+// TODO fix error handling and returnig erors
 func IfConfigFileExists(configPath string) bool {
 	exists, err := fs.PathExists(configPath)
 	if err != nil {
 		log.Fatalf("%s Config file not found at: %s", err, configPath)
 	}
 	return exists
+}
+
+func IsServiceAccountJsonFileExists(serviceAccountKeyPath string) (bool, error) {
+	exists, err := fs.PathExists(serviceAccountKeyPath)
+	if err != nil {
+		log.Fatalf("%s Config file not found at: %s", err, serviceAccountKeyPath)
+	}
+	return exists, nil
 }
 
 func getApiKeyFromFile(OpenAiApiKeyPath string) string {
@@ -52,6 +61,12 @@ func GetMaskedApiKey(OpenAiApiKeyPath string) string {
 	apiKey := getApiKeyFromFile(OpenAiApiKeyPath)
 	maskedKey := string(apiKey[0:5]) + "..." + string(apiKey[len(apiKey)-5:len(apiKey)])
 	return maskedKey
+}
+
+func isValidURL(input string) bool {
+	urlPattern := `^(https?|ftp)://[^\s/$.?#].[^\s]*$`
+	regex := regexp.MustCompile(urlPattern)
+	return regex.MatchString(input)
 }
 
 func PrintlnGreen(msg string) {
