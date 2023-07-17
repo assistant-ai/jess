@@ -13,6 +13,13 @@ type AppConfig struct {
 	ModelName             string
 	GCPProjectId          string
 	LogLevel              string
+	JessEmailAccount      string
+}
+
+var singletonJessConfig *AppConfig
+
+func init() {
+	// This will be executed automatically when the package is imported
 }
 
 func LoadConfig(configPath string) (*AppConfig, error) {
@@ -38,6 +45,7 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 		viper.SetConfigFile(configPath)
 		viper.SetDefault("openai.openai_api_key_path", openAiApiKeyFilePath)
 		viper.SetDefault("gcp.service_account_key_path", jessServiceAccountFilePath)
+		viper.SetDefault("gcp.jessica_mail_account", "")
 		viper.SetDefault("model", "gpt3Turbo")
 		viper.SetDefault("gcp.gcp_project_id", "")
 		viper.SetDefault("log_level", "INFO")
@@ -51,16 +59,17 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 		return nil, err
 	}
 
-	appConfig := &AppConfig{
+	singletonJessConfig = &AppConfig{
 		OpenAiApiKeyPath:      viper.GetString("openai.openai_api_key_path"),
 		ServiceAccountKeyPath: viper.GetString("gcp.service_account_key_path"),
+		JessEmailAccount:      viper.GetString("gcp.jessica_mail_account"),
 		ModelName:             viper.GetString("model"),
 		GCPProjectId:          viper.GetString("gcp.gcp_project_id"),
 		LogLevel:              viper.GetString("log_level"),
 	}
 
-	if appConfig.OpenAiApiKeyPath != openAiApiKeyFilePath {
-		openAiApiKeyFilePath = appConfig.OpenAiApiKeyPath
+	if singletonJessConfig.OpenAiApiKeyPath != openAiApiKeyFilePath {
+		openAiApiKeyFilePath = singletonJessConfig.OpenAiApiKeyPath
 	}
 
 	if !IfFileWithAPiKeyExists(openAiApiKeyFilePath) {
@@ -70,6 +79,9 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 		PrintlnRed("Then run `echo YOUR_OPEN_AI_API_TOKEN > " + openAiApiKeyFilePath + "`")
 		os.Exit(1)
 	}
+	return singletonJessConfig, nil
+}
 
-	return appConfig, nil
+func GetConfig() *AppConfig {
+	return singletonJessConfig
 }

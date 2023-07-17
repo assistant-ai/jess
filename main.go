@@ -22,6 +22,8 @@ import (
 
 var version = "unknown"
 
+var configPath = ""
+
 func main() {
 	app, err := setupApp()
 	jess_cli.HandleError(err)
@@ -33,10 +35,10 @@ func main() {
 func setupApp() (*cli.App, error) {
 	app := cli.NewApp()
 	app.Name = "jessica"
-	app.Usage = "Jessica is an AI assistent."
+	app.Usage = "Jessica is an AI assistant."
 	app.Version = version
 
-	config, err := utils.LoadConfig("")
+	config, err := utils.LoadConfig(configPath)
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +109,7 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 			return nil, fmt.Errorf(errorText)
 		}
 		if config.ServiceAccountKeyPath == "" {
-			errorText := "model is PaLM but GCP service acout json path is null"
+			errorText := "model is PaLM but GCP service account json path is null"
 			logger.Error(errorText)
 			return nil, fmt.Errorf(errorText)
 		}

@@ -2,6 +2,7 @@ package commands_config
 
 import (
 	"github.com/assistant-ai/jess/commands_common"
+	"github.com/assistant-ai/jess/utils"
 	"github.com/urfave/cli/v2"
 )
 
@@ -24,6 +25,19 @@ func (c *TestCommand) Flags() []cli.Flag {
 
 // TODO rebuild this command after changing promt builder
 func (c *TestCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
+
+	config := utils.GetConfig()
+	modelNameMsg := "Model name:" + config.ModelName
+	logInfoMsg := "Log level:" + config.LogLevel
+	openaiKeyPath := "OpenAI API key path:" + config.OpenAiApiKeyPath
+	maskedKey := utils.GetMaskedApiKey(config.OpenAiApiKeyPath)
+	msgMaskedKey := "OpenAI API key stored in file: " + maskedKey
+	utils.PrintlnGreen("Your current configuration:")
+	utils.PrintlnYellow(logInfoMsg)
+	utils.PrintlnYellow(modelNameMsg)
+	utils.PrintlnYellow(openaiKeyPath)
+	utils.PrintlnYellow(string(msgMaskedKey))
+
 	prePrompt := "User is just want to be sure if chat gpt is available. You should just reply with model of chat gpt that you are using."
 	finalPrompt := prePrompt
 	return finalPrompt, nil

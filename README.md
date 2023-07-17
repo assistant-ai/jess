@@ -18,6 +18,7 @@ It is possible to check that everything was installed correctly by running:
 ```bash
 jess config test test -c "UUID"
 ```
+this will also pring curent configuration to terminal.
 
 to get help use command:
 
@@ -31,11 +32,13 @@ During instalation on Linux script will create folder `~/.jess/`.
 this folder is used for storing:
  - `config.yaml ` - file for basic configuration (model type, token size limit, custom api storage). This file is not created automatically. Config used for overwriting default values.
  - `open-ai.key` - file for storing OPENAI api key as a plain text. This file is not created automatically.
+ - `jess-service-account.json ` -file for storing service account for GCP. This file is not created automatically. It is used for processing with google documents. 
 
 Default configuration: 
-- Model: `gpt3`
+- Model: `gpt3Turbo`
 - log_level: `INFO`
 - api key storage: `~/.jess/open-ai.key`
+- service account storage: `~/.jess/jess-service-account.json`
 
 
 
@@ -47,7 +50,7 @@ There are few ways to configure Jessica CLI:
 Example for configuration file:
 
 ```yaml
-model: "gpt3"
+model: "gpt3Turbo"
 log_level: "INFO"
 openai:
   openai_api_key_path: "/custom_folder/open-ai.key"
@@ -58,11 +61,18 @@ openai:
 ```bash
 jess config -c "UUID"
 ```
+
+There are next models valid for usage:
+- `gpt3Turbo` - base default model
+- `gpt3TurboBig` - model for larger size of documents
+- `gpt4` - modern model with better performance, but required approve from openAPI for usage.
+- `gpt4Big`  - modern model with better performance, but required approve from openAPI for usage. Used for larger size of documents
+
 it will provide you with interactive CLI for configuration. 
 It will allow you to change model type, log level and openai api key storage path.
 
 in case you want clean your context storage and start from scratch you can delete db file. this file stored in `~/.llmchat-client`.
-for deliting just use command:
+for deleting just use command:
 
 ```bash
 rm ~/.llmchat-client
@@ -95,6 +105,7 @@ Jessica offers the following features:
    - Explain: Describe the code in plain English.
    - Refactor: Refactor the code following best practices.
    - Answer Questions: Answer questions about the code with possible code examples.
+3. **Process google documents**: Jessica can process google documents and provide you with the summary of the document. It is possible to use it for summarizing the code documentation. or do any other test action from the promt. Right now Jessica can only read google documents. It is not possible to edit them. output only to console. 
 
 ## Usage
 
@@ -170,6 +181,20 @@ Delete context. IMPORTANT: deleteing context will delete a dialog attached to it
 
 Note: Replace `<input_file>` with the actual file paths and `<context_id>` with an actual context ID.
 
+
+4. **Google documents processing**
+
+   Summarize google document:
+   ```bash
+   jess process -g ${ID_OF_DOCUMENT} -p "give me short summary about this document"
+   ```
+   
+   or
+
+    ```bash
+    jess process -g ${DOCUMENT_URL} -p "give me short summary about this document"
+    ```
+    
 ## Contributing and Support
 
 Feel free to open issues, submit pull requests, or contact us if you need help.
