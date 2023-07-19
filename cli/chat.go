@@ -92,6 +92,15 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 			return fmt.Errorf("Error reading input")
 		}
 		newMessage := scanner.Text()
+		if utils.IfAnswerInFinishingArray(newMessage) {
+			if utils.AskForConfirmation() {
+				utils.PrintlnCyan("Buy, buy! I'll miss you")
+				break
+			} else {
+				utils.PrintlnCyan("Ok, let's continue")
+				continue
+			}
+		}
 		if newMessage == "end" {
 			break
 		}
