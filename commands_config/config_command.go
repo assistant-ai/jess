@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/utils"
-	"github.com/assistant-ai/llmchat-client/gpt"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -32,21 +31,58 @@ func ConfigFlags() []cli.Flag {
 // TODO rebuild this command after changing promt builder
 func ConfigAction() func(c *cli.Context) error {
 	return func(c *cli.Context) error {
-		listOfModels := gpt.GetListOfModels()
-		msgForSetupModels := "[IMPORTANT] Use only next models: \n" + strings.Join(listOfModels, "\n")
-		setupValue("model", msgForSetupModels)
-		setupValue("openai_api_key_path", "")
-		setupValue("log_level", "")
-		setupValue("gcp.service_account_key_path", "")
+		configStructureMap := utils.GetConfigMap()
+		listOfDefaultConfigParameters := utils.GetListOfConfigFields()
+		utils.PrintlnRed("W A R N I N G\n\n CHANGING CONFIGURATION:\n ++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+		for _, element := range listOfDefaultConfigParameters {
+			SetConfigElementWithNewValue(configStructureMap[element])
+		}
+
 		utils.PrintlnGreen("Configuration changed successfully")
 		os.Exit(0)
 		return nil
 	}
 }
 
-func setupValue(configKey string, msg string) {
-	msgForInput := msg + "\nPlease print new " + strings.ToUpper(configKey) + " you want to use:\n [ for skip press enter ]"
-	utils.PrintlnCyan(msgForInput)
+func SetConfigElementWithNewValue(config utils.Config) {
+	nameInConfigFile := config.GetNameInConfigFile()
+	suggestedValues := config.GetSuggestedValues()
+	recommendedMSG := generateRecommendationValuesMSG(suggestedValues)
+	overviewMSG := generateOverviewMSG(config)
+	setupValueWithKeyInputInvitation(nameInConfigFile, recommendedMSG, overviewMSG)
+}
+
+func generateOverviewMSG(config utils.Config) string {
+	nameInConfigFile := config.GetNameInConfigFile()
+	appConfigParameter := config.GetName()
+	descriptionStr := config.GetShortDescription()
+	descriptionMSG := "DESCRIPTION: \n\n parameter  >>>  " + nameInConfigFile + "   <<<  from config file is used to set  >>>   " + appConfigParameter + "   <<<  in application configuration.\n " + descriptionStr
+	return descriptionMSG
+}
+
+func generateRecommendationValuesMSG(suggestedValues []string) string {
+	listOfSuggestedValues := ""
+	var recommendedMSG string
+	if len(suggestedValues) == 1 {
+		listOfSuggestedValues = suggestedValues[0]
+		if listOfSuggestedValues == "" {
+			recommendedMSG = ""
+		}
+	} else {
+		listOfSuggestedValues = strings.Join(
+			suggestedValues[:],
+			", ",
+		)
+		recommendedMSG = "USE ONLY: " + listOfSuggestedValues
+	}
+	return recommendedMSG
+}
+
+func setupValueWithKeyInputInvitation(configKey string, recommendationMsg string, descriptionMsg string) {
+	supportiveMsg := recommendationMsg + "\n " + descriptionMsg + "\n\n [ for skip press Enter ]"
+	inviteSetupMsg := "\n Please type new " + strings.ToUpper(configKey) + " you want to use: "
+	utils.PrintlnYellow(inviteSetupMsg)
+	utils.PrintlnCyan(supportiveMsg)
 	utils.PrintCyanInvite()
 	scanner := bufio.NewScanner(os.Stdin)
 
