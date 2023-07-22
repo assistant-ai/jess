@@ -48,7 +48,7 @@ func contextFlags() []cli.Flag {
 		&cli.StringFlag{
 			Name:    "context",
 			Aliases: []string{"c"},
-			Usage:   "Continue dialog with the contextn id",
+			Usage:   "Continue dialog with the context id",
 		},
 		&cli.BoolFlag{
 			Name:    "show",
@@ -71,7 +71,6 @@ func contextFlags() []cli.Flag {
 func handleContextShow(contextId string) {
 	message, err := db.GetContextMessage(contextId)
 	jess_cli.HandleError(err)
-
 	jess_cli.ShowContext(message)
 }
 
