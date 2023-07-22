@@ -7,7 +7,7 @@ steps:
   - name: 'gcr.io/cloud-builders/go:1.20'
     id: pull-dependencies
     waitFor: [ '-' ]
-    env: [ 'GO111MODULE=on', 'CGO_ENABLED=0' ]
+    env: [ 'GO111MODULE=on', 'CGO_ENABLED=1' ]
     entrypoint: 'go'
     args: [ 'mod', 'tidy' ]
     volumes:
@@ -18,7 +18,7 @@ steps:
   - name: 'gcr.io/cloud-builders/go:1.20'
     id: tests
     waitFor: [ 'pull-dependencies' ]
-    env: [ 'GO111MODULE=on', 'CGO_ENABLED=0' ]
+    env: [ 'GO111MODULE=on', 'CGO_ENABLED=1' ]
     entrypoint: 'go'
     args: [ 'test', '-v', './prompt' ]
     volumes:
