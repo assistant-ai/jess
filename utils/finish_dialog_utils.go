@@ -7,6 +7,7 @@ import (
 )
 
 var words = []string{
+	"Finish",
 	"Thanks",
 	"Bye",
 	"Goodbye",

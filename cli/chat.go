@@ -73,18 +73,20 @@ func readNewMessage(scanner *bufio.Scanner) (string, error) {
 func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Logger) error {
 	contextId := rawContextId
 	if rawContextId == "" {
-		rawContextId = db.RandomContextId
+		contextId = db.RandomContextId
 	}
 	quit := make(chan bool)
 
 	scanner := bufio.NewScanner(os.Stdin)
-	messages := make([]db.Message, 0)
-	messages, err := db.GetMessagesByContextID(contextId)
 
-	if err != nil {
-		return err
+	if rawContextId != "" {
+		messages := make([]db.Message, 0)
+		messages, err := db.GetMessagesByContextID(contextId)
+		if err != nil {
+			return err
+		}
+		ShowMessages(messages)
 	}
-	ShowMessages(messages)
 
 	for {
 		utils.PrintlnCyan(">>> You:")
@@ -102,9 +104,6 @@ func StartChat(rawContextId string, llmClient *client.Client, logger *logrus.Log
 			}
 		}
 		if newMessage == "end" {
-			break
-		}
-		if err != nil {
 			break
 		}
 		go AnimateThinking(quit)
