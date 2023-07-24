@@ -32,7 +32,7 @@ func (c *GrammarCommand) PreparePrompt(cliContext *cli.Context) (string, error) 
 	filePaths := []string{filePath}
 	urls := []string{}
 	gDriveFiles := []string{}
-	prePrompt := "User going to provide you with text as well as some context to it. Figure out which text user wants to update yourself. You should fix all misspelling and fix all grammar issues in this text, if it requires you could change some phrasal verbs and phrases that text should sound more clear."
+	prePrompt := "User going to provide you with text as well as some context to it. Figure out which text user wants to update yourself. You should fix all misspelling and fix all grammar issues and any typos in this text, if it requires you could change some phrasal verbs and phrases that text should sound more clear and stylistically right. Text tone should be general, it shouldn't content any tricky phrases and quotes. User might provide additional requirements."
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
 		return "", err

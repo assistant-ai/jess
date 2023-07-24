@@ -32,7 +32,7 @@ func (c *QuestionCommand) PreparePrompt(cliContext *cli.Context) (string, error)
 	userPrompt := cliContext.String("prompt")
 	urlsList := cliContext.StringSlice("url")
 	googleDriveFiles := cliContext.StringSlice("gdrive")
-	prePrompt := "Let me show you code files and than I will show you my question for the code in this files, please answer with example of the code where possible."
+	prePrompt := "Let me show you code files and than I will show you my question for the code in this files. Identify the main language of these files, and imagine you are an expert in that programming language. And provide answer with example of the code and best practices for that code where possible."
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urlsList, googleDriveFiles, userPrompt)
 	if err != nil {
 		return "", err

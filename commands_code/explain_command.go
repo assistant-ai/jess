@@ -31,7 +31,7 @@ func (c *ExplainCommand) PreparePrompt(cliContext *cli.Context) (string, error) 
 	urlsPaths := cliContext.StringSlice("url")
 	googleDriveFiles := cliContext.StringSlice("gdrive")
 	prePrompt := "Let me show you code files."
-	userPrompt := "Please explain this code for me in plain English."
+	userPrompt := "Please explain this code for me in plain text English. For each section of explanation add in front also lines of code that you are explaining. Add short summary at start of explanation. At the start add file name"
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urlsPaths, googleDriveFiles, userPrompt)
 	if err != nil {
 		return "", err
