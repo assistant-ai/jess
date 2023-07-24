@@ -51,17 +51,18 @@ func extractReadableTextFromURL(urlString string) (string, error) {
 	return article.TextContent, nil
 }
 
-// TODO promt builder should not be only with a file
 func FilePromptBuilder(prePrompt string, filePaths []string, urls []string, googleDriveFiles []string, userPrompt string) (string, error) {
 	var files []File
 
 	// Read file contents and populate the files slice
 	for _, filePath := range filePaths {
-		fileContent, err := readFileContent(filePath)
-		if err != nil {
-			return "", err
+		if filePath != "" {
+			fileContent, err := readFileContent(filePath)
+			if err != nil {
+				return "", err
+			}
+			files = append(files, File{filePath, fileContent})
 		}
-		files = append(files, File{filePath, fileContent})
 	}
 
 	for _, url := range urls {
