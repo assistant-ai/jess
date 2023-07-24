@@ -44,7 +44,7 @@ function deletion_confirm() {
 }
 
 check_file_exists /usr/local/bin/jess
-#check_file_exists /Users/nik/.llmchat-client/messages.db
+
 
 deletion_confirm
 
