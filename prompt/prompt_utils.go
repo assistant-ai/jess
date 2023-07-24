@@ -57,11 +57,13 @@ func FilePromptBuilder(prePrompt string, filePaths []string, urls []string, goog
 
 	// Read file contents and populate the files slice
 	for _, filePath := range filePaths {
-		fileContent, err := readFileContent(filePath)
-		if err != nil {
-			return "", err
+		if filePath != "" {
+			fileContent, err := readFileContent(filePath)
+			if err != nil {
+				return "", err
+			}
+			files = append(files, File{filePath, fileContent})
 		}
-		files = append(files, File{filePath, fileContent})
 	}
 
 	for _, url := range urls {
