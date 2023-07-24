@@ -193,8 +193,42 @@ Note: Replace `<input_file>` with the actual file paths and `<context_id>` with 
 
     ```bash
     jess process -g ${DOCUMENT_URL} -p "give me short summary about this document"
-    ```
-    
+    ``` 
+   
+
+# DELETING JESS
+
+Deleting binaries
+```bash
+rm /usr/local/bin/jess
+```
+Deleting configuration files:
+```bash
+rm -rf ~/.jess
+```
+
+Deleting context db
+```bash
+rm -rf ~/.llmchat-client
+```
+
+### Deleting for Developers and QA
+For deleting it is possible to use uninstaller `uninstall.sh`. It will require to put confirmation manually - type `delete jess` and press enter.
+
+Delete main files (jess binaries and context files) and folders:
+```bash
+./uninstall.sh
+```
+
+Delete all files including config (jess binaries and context files) files that stored in `~/.jess` folder. It reqires to add additional flag `-f`:
+
+`-f` - full delete
+```bash
+./uninstall.sh -f
+```
+
+
+
 ## Contributing and Support
 
 Feel free to open issues, submit pull requests, or contact us if you need help.

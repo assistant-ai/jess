@@ -39,4 +39,6 @@ curl -L -o /tmp/${BINARY_NAME} "${REPOSITORY}/download/${LATEST_TAG}/${BINARY_NA
 chmod +x /tmp/${BINARY_NAME}
 sudo mv /tmp/${BINARY_NAME} /usr/local/bin/${BINARY_NAME}
 
-echo "${BINARY_NAME} installed successfully!"
+#echo "${BINARY_NAME} installed successfully!"
+jess -v
+echo -e "\033[32m${BINARY_NAME} installed successfully!  \033[m"
