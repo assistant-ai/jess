@@ -1,9 +1,11 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/spf13/viper"
 	"log"
 	"os"
+	"reflect"
 )
 
 type AppConfig struct {
@@ -48,10 +50,35 @@ func init() {
 	}
 }
 
-// TODO split this function into two: one for loading the config and one for creating the config file
-func LoadConfig(configPath string) (*AppConfig, error) {
+func PrintAppConfig() {
+	a := singletonJessConfig
+	PrintlnYellow("OpenAiApiKeyPath: " + a.OpenAiApiKeyPath)
+	PrintlnYellow("ServiceAccountKeyPath: " + a.ServiceAccountKeyPath)
+	PrintlnYellow("ModelName: " + a.ModelName)
+	PrintlnYellow("GCPProjectId: " + a.GCPProjectId)
+	PrintlnYellow("LogLevel: " + a.LogLevel)
+	PrintlnYellow("JessEmailAccount: " + a.JessEmailAccount)
+}
 
-	// TODO I would suggest to tup Always default folder
+func PrintFieldValue(s *AppConfig, fieldName string, valueType string) {
+	structValue := reflect.ValueOf(s).Elem()
+	fieldValue := structValue.FieldByName(fieldName)
+
+	if fieldValue.IsValid() {
+		msg := valueType + " " + fieldName + " - " + fieldValue.Interface().(string)
+		fmt.Println(msg)
+	} else {
+		fmt.Println("Invalid field name:", fieldName)
+	}
+}
+
+func LoadConfig(configPath string) (*AppConfig, error) {
+	SetupConfig(configPath)
+	return singletonJessConfig, nil
+}
+
+func SetupConfig(configPath string) {
+	// TODO I would suggest to setup Always default folder
 	if configPath == "" {
 		configPath = GetDefaultConfigFilePath()
 	}
@@ -59,7 +86,7 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 	viper.SetConfigFile(configPath)
 	err := viper.ReadInConfig()
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
 
 	singletonJessConfig = &AppConfig{
@@ -73,7 +100,6 @@ func LoadConfig(configPath string) (*AppConfig, error) {
 
 	//TODO extract this check somewhere else
 	CheckExistingOfOpenAPIKey(configPath)
-	return singletonJessConfig, nil
 }
 
 func CheckExistingOfOpenAPIKey(configPath string) {

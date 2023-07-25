@@ -49,7 +49,8 @@ func SetConfigElementWithNewValue(config utils.Config) {
 	suggestedValues := config.GetSuggestedValues()
 	recommendedMSG := generateRecommendationValuesMSG(suggestedValues)
 	overviewMSG := generateOverviewMSG(config)
-	setupValueWithKeyInputInvitation(nameInConfigFile, recommendedMSG, overviewMSG)
+	nameInAppConfig := config.GetName()
+	setupValueWithKeyInputInvitation(nameInConfigFile, recommendedMSG, overviewMSG, nameInAppConfig)
 }
 
 func generateOverviewMSG(config utils.Config) string {
@@ -78,7 +79,7 @@ func generateRecommendationValuesMSG(suggestedValues []string) string {
 	return recommendedMSG
 }
 
-func setupValueWithKeyInputInvitation(configKey string, recommendationMsg string, descriptionMsg string) {
+func setupValueWithKeyInputInvitation(configKey string, recommendationMsg string, descriptionMsg string, appConfigName string) {
 	supportiveMsg := recommendationMsg + "\n " + descriptionMsg + "\n\n [ for skip press Enter ]"
 	inviteSetupMsg := "\n Please type new " + strings.ToUpper(configKey) + " you want to use: "
 	utils.PrintlnYellow(inviteSetupMsg)
@@ -91,9 +92,18 @@ func setupValueWithKeyInputInvitation(configKey string, recommendationMsg string
 	}
 	newValue := scanner.Text()
 	if newValue != "" {
+
+		println("Config key is: " + configKey)
+		println("App config name is: " + appConfigName)
+		oldConfig, _ := utils.LoadConfig(configFilePath)
+		utils.PrintFieldValue(oldConfig, appConfigName, "OLD")
 		viper.SetConfigFile(configFilePath)
 		viper.ReadInConfig()
 		viper.Set(configKey, newValue)
 		viper.WriteConfig()
+		newConfig, _ := utils.LoadConfig(configFilePath)
+		utils.PrintFieldValue(newConfig, appConfigName, "NEW")
+		msgPath := "value was changed in config file: " + configFilePath
+		utils.PrintlnYellow(msgPath)
 	}
 }
