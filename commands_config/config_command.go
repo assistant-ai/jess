@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/utils"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -95,13 +96,21 @@ func setupValueWithKeyInputInvitation(configKey string, recommendationMsg string
 
 		println("Config key is: " + configKey)
 		println("App config name is: " + appConfigName)
-		oldConfig, _ := utils.LoadConfig(configFilePath)
+		oldConfig, err := utils.LoadConfig(configFilePath)
+		if err != nil {
+			println("error while loading old config file during changing value")
+			logrus.Panic(err)
+		}
 		utils.PrintFieldValue(oldConfig, appConfigName, "OLD")
 		viper.SetConfigFile(configFilePath)
 		viper.ReadInConfig()
 		viper.Set(configKey, newValue)
 		viper.WriteConfig()
-		newConfig, _ := utils.LoadConfig(configFilePath)
+		newConfig, err := utils.LoadConfig(configFilePath)
+		if err != nil {
+			println("error while loading updated config file during changing value")
+			logrus.Panic(err)
+		}
 		utils.PrintFieldValue(newConfig, appConfigName, "NEW")
 		msgPath := "value was changed in config file: " + configFilePath
 		utils.PrintlnYellow(msgPath)
