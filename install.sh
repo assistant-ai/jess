@@ -1,24 +1,11 @@
 #!/bin/bash
 set -e
 
+
+# attach external functions
+source ./bash_functions.sh
 # Install jq if it is not installed already
-if ! command -v jq &> /dev/null; then
-  echo "jq not found, installing..."
-  case "$(uname)" in
-    "Linux")
-      sudo apt-get update
-      sudo apt-get install -y jq
-      ;;
-    "Darwin")
-      brew install jq
-      ;;
-    *)
-      echo "Unsupported OS. Please manually install jq"
-      exit 1
-      ;;
-  esac
-  echo "jq installed successfully!"
-fi
+install_jq
 
 # Set the binary name and repository URL here
 BINARY_NAME="jess"
@@ -39,6 +26,5 @@ curl -L -o /tmp/${BINARY_NAME} "${REPOSITORY}/download/${LATEST_TAG}/${BINARY_NA
 chmod +x /tmp/${BINARY_NAME}
 sudo mv /tmp/${BINARY_NAME} /usr/local/bin/${BINARY_NAME}
 
-#echo "${BINARY_NAME} installed successfully!"
 jess -v
 echo -e "\033[32m${BINARY_NAME} installed successfully!  \033[m"
