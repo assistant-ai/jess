@@ -237,51 +237,9 @@ jess text mail -i <input_file> -p "Additional instructions"
 ```
 
 
-#### Fixing grammar
-Fixing grammar (input file) with output to terminal ( -o <output_file> - optional):
-Main command:
-- `jess text grammar` -  main command
-  Parameters:
-- -p <problem> - required
-- -c <context_id> - optional
-- -i <input_file> - required, allow multiple files
-- -o <output_file> - optional
-
-
-```bash
-jess text grammar -i <input_file> -p "additional instructions"
-```
-
-#### Solving problems
-
-Suggest steps for solving problems with asking question:
-Main command:
-- `jess text solve` -  main command
-Parameters:
-- -p <problem> - required
-- -c <context_id> - optional
-- -i <input_file> - optional
-- -o <output_file> - optional
-
-```bash
-jess text solve -p "Describe your problem"
-```
-
-### 5. **Google documents processing**
-
-Request for specific promt to google document
-
-
-
-```bash
-jess process -g ${ID_OF_DOCUMENT} -p "Your promt"
-```
-
-or
-
-```bash
-jess process -g ${DOCUMENT_URL} -p "Your promt"
-```
+    ```bash
+    jess process -g ${DOCUMENT_URL} -p "give me short summary about this document"
+    ```
     
 ## Contributing and Support
 Feel free to open issues, submit pull requests, or contact us if you need help.
