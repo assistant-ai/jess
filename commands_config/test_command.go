@@ -29,18 +29,18 @@ func (c *TestCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
 	config := utils.GetConfig()
 	msgConfigFolder := "Config folder:" + utils.GetDefaultConfigFolderPath()
 	msgConfigPath := "Config folder:" + utils.GetDefaultConfigFilePath()
-	modelNameMsg := "Model name:" + config.ModelName
-	logInfoMsg := "Log level:" + config.LogLevel
-	openaiKeyPath := "OpenAI API key path:" + config.OpenAiApiKeyPath
+	//modelNameMsg := "Model name:" + config.ModelName
+	//logInfoMsg := "Log level:" + config.LogLevel
+	//openaiKeyPath := "OpenAI API key path:" + config.OpenAiApiKeyPath
 	maskedKey := utils.GetMaskedApiKey(config.OpenAiApiKeyPath)
 	msgMaskedKey := "OpenAI API key stored in file: " + maskedKey
-	// TODO update showing this message using utils.PrintConfig - it should show all config parameters
 	utils.PrintlnGreen("Your current configuration:")
 	utils.PrintlnYellow(msgConfigFolder)
 	utils.PrintlnYellow(msgConfigPath)
-	utils.PrintlnYellow(logInfoMsg)
-	utils.PrintlnYellow(modelNameMsg)
-	utils.PrintlnYellow(openaiKeyPath)
+	utils.PrintAppConfig()
+	//utils.PrintlnYellow(logInfoMsg)
+	//utils.PrintlnYellow(modelNameMsg)
+	//utils.PrintlnYellow(openaiKeyPath)
 	utils.PrintlnYellow(string(msgMaskedKey))
 
 	prePrompt := "User is just want to be sure if chat gpt is available. You should just reply with model of chat gpt that you are using."
