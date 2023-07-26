@@ -237,9 +237,87 @@ jess text mail -i <input_file> -p "Additional instructions"
 ```
 
 
-    ```bash
-    jess process -g ${DOCUMENT_URL} -p "give me short summary about this document"
-    ```
-    
+#### Fixing grammar
+Fixing grammar (input file) with output to terminal ( -o <output_file> - optional):
+Main command:
+- `jess text grammar` -  main command
+  Parameters:
+- -p <problem> - required
+- -c <context_id> - optional
+- -i <input_file> - required, allow multiple files
+- -o <output_file> - optional
+
+
+```bash
+jess text grammar -i <input_file> -p "additional instructions"
+```
+
+#### Solving problems
+
+Suggest steps for solving problems with asking question:
+Main command:
+- `jess text solve` -  main command
+  Parameters:
+- -p <problem> - required
+- -c <context_id> - optional
+- -i <input_file> - optional
+- -o <output_file> - optional
+
+```bash
+jess text solve -p "Describe your problem"
+```
+
+
+### 5. **Google documents processing**
+
+Request for specific promt to google document
+
+
+
+```bash
+jess process -g ${ID_OF_DOCUMENT} -p "Your promt"
+```
+
+or
+
+```bash
+jess process -g ${DOCUMENT_URL} -p "give me short summary about this document"
+```
+
+
+# DELETING JESS
+
+Deleting binaries
+```bash
+rm /usr/local/bin/jess
+```
+Deleting configuration files:
+```bash
+rm -rf ~/.jess
+```
+
+Deleting context db
+```bash
+rm -rf ~/.llmchat-client
+```
+
+### Deleting for Developers and QA
+For deleting it is possible to use uninstaller `uninstall.sh`. It will require to put confirmation manually - type `delete jess` and press enter.
+
+Delete main files (jess binaries and context files) and folders:
+```bash
+./uninstall.sh
+```
+
+Delete all files including config (jess binaries and context files) files that stored in `~/.jess` folder. It requires to add additional flag `-f`:
+
+`-f` - full delete
+```bash
+./uninstall.sh -f
+```
+
+
+
 ## Contributing and Support
+
 Feel free to open issues, submit pull requests, or contact us if you need help.
