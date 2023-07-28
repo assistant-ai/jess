@@ -50,7 +50,7 @@ func init() {
 	}
 }
 
-func PrintAppConfig() {
+func PrintCurrentAppConfigValuesToTerminal() {
 	a := singletonJessConfig
 	PrintlnYellow("OpenAiApiKeyPath: " + a.OpenAiApiKeyPath)
 	PrintlnYellow("ServiceAccountKeyPath: " + a.ServiceAccountKeyPath)
