@@ -9,10 +9,54 @@ Jessica is an AI assistant for software developers to help them with their code 
 
 To install, first, clone the repository and navigate to the project directory:
 
+easiest way - just run:
+```bash
+build_and_nstall.sh
+```
+
+it will create binaries with latest (could be not tested) changes and set binaries to right folder.
+
+### Build from source
+
+This will build new version of `jess` in to oyu directory. depends on your platform it could have different names. but it will always started with `jess-*`
+
+```bash
+build.sh
+```
+
+### Use script
+
+If you already have `jess*` file in your directory - just execute install. this script copy it to `/usr/local/bin/`.
+
+```bash
+install.sh
+```
+
+
+### lazy installation from link
+
+Execute this link. it will download latest jess from github releases and insall it. 
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/assistant-ai/jess/master/install.sh | bash
 ```
 
+### Explanation of installation and configuration
+
+During installation on Linux script will create folder `~/.jess/`.
+this folder is used for storing:
+- `config.yaml ` - file for basic configuration (model type, token size limit, custom api storage). This file is not created automatically. Config used for overwriting default values.
+- `open-ai.key` - file for storing OPENAI api key as a plain text. This file is not created automatically.
+- `jess-service-account.json ` -file for storing service account for GCP. This file is not created automatically. It is used for processing with google documents.
+
+Default configuration:
+- Model: `gpt3Turbo`
+- log_level: `INFO`
+- api key storage: `~/.jess/open-ai.key`
+- service account storage: `~/.jess/jess-service-account.json`
+
+
+### After installation
 It is possible to check that everything was installed correctly by running:
 
 ```bash
@@ -26,19 +70,14 @@ to get help use command:
 jess --help
 ```
 
+### Known windows limitation:
+> known issues: config file didn't create automatically, so it is required to setup manually. take an example from this readme below. 
+> installation script doesn't work for Winodws - so you need add jess to your PATH. Or use it from the folder with jess.
+> it also doesn't support colored answer in terminal. So most po out messages would have bash '[]' brackets n printing output.
 
 
-During instalation on Linux script will create folder `~/.jess/`. 
-this folder is used for storing:
- - `config.yaml ` - file for basic configuration (model type, token size limit, custom api storage). This file is not created automatically. Config used for overwriting default values.
- - `open-ai.key` - file for storing OPENAI api key as a plain text. This file is not created automatically.
- - `jess-service-account.json ` -file for storing service account for GCP. This file is not created automatically. It is used for processing with google documents. 
 
-Default configuration: 
-- Model: `gpt3Turbo`
-- log_level: `INFO`
-- api key storage: `~/.jess/open-ai.key`
-- service account storage: `~/.jess/jess-service-account.json`
+
 
 
 
