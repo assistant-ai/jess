@@ -306,7 +306,7 @@ Suggest steps for solving problems with asking question:
 Main command:
 - `jess text solve` -  main command
   Parameters:
-- -p <problem> - required
+- -p <promt> - required. description of your problem
 - -c <context_id> - optional
 - -i <input_file> - optional
 - -o <output_file> - optional
@@ -315,15 +315,30 @@ Main command:
 jess text solve -p "Describe your problem"
 ```
 
+#### creating user story
+
+Creating user story based on provided topic. Additional information about topic could be provided in input file (-i <input_file> - optional). In input file text in square brackets **[ could be additional simple instruction ]** for Jess.  Output by default to terminal (-o <output_file> - optional)
+
+Main command:
+```bash
+jess text user_story -p "As user I want to do send request to my server"
+```
+
+Parameters:
+- -p <promt> - optional. Short description of your user story
+- -i <input_file> - optional. Additional information about topic could be provided in input file. However it could be used as main source of information for jess.
+- -o <output_file> - optional. Output by default to terminal
+- -c <context_id> - optional. Context id for storing user story. 
+
+
 
 ### 5. **Google documents processing**
 
 Request for specific promt to google document
 
 
-
 ```bash
-jess process -g ${ID_OF_DOCUMENT} -p "Your promt"
+jess process -g ${ID_OF_DOCUMENT} -p "Your prompt"
 ```
 
 or
