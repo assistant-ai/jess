@@ -18,7 +18,7 @@ func (c *MailCommand) Usage() string {
 
 func (c *MailCommand) Flags() []cli.Flag {
 	return []cli.Flag{
-		commands_common.InputFileFlag(),
+		commands_common.InputFilesFlag(),
 		commands_common.ContextFlag(),
 		commands_common.OutputFlag(),
 		commands_common.PromptFlag(),
@@ -27,11 +27,10 @@ func (c *MailCommand) Flags() []cli.Flag {
 }
 
 func (c *MailCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
-	filePath := cliContext.String("input")
+	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
-	filePaths := []string{filePath}
-	urls := []string{}
-	gDriveFiles := []string{}
+	urls := cliContext.StringSlice("url")
+	gDriveFiles := cliContext.StringSlice("gdrive")
 	prePrompt := "User going to provide you with mail text as well as some context to it. Figure out which mail user wants to update yourself. You should re-write mail without changing the intent or meaning but make it as clear as possible, as concrete as possible. User might provide additional requirements."
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {

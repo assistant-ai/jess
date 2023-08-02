@@ -18,20 +18,25 @@ func (c *GrammarCommand) Usage() string {
 
 func (c *GrammarCommand) Flags() []cli.Flag {
 	return []cli.Flag{
-		commands_common.InputFileFlag(),
+		&cli.StringFlag{
+			Name:     "prompt",
+			Aliases:  []string{"p"},
+			Usage:    "[optional] add additional request to Jess",
+			Value:    "",
+			Required: false,
+		},
+		commands_common.InputFilesFlag(),
 		commands_common.ContextFlag(),
-		commands_common.PromptFlag(),
 		commands_common.OutputFlag(),
 		commands_common.GoogleDriveFilesFlag(),
 	}
 }
 
 func (c *GrammarCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
-	filePath := cliContext.String("input")
+	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
-	filePaths := []string{filePath}
-	urls := []string{}
-	gDriveFiles := []string{}
+	urls := cliContext.StringSlice("url")
+	gDriveFiles := cliContext.StringSlice("gdrive")
 	prePrompt := "User going to provide you with text as well as some context to it. Figure out which text user wants to update yourself. You should fix all misspelling and fix all grammar issues and any typos in this text, if it requires you could change some phrasal verbs and phrases that text should sound more clear and stylistically right. Text tone should be general, it shouldn't content any tricky phrases and quotes. User might provide additional requirements."
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
