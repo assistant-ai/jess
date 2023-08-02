@@ -67,9 +67,18 @@ There are next models valid for usage:
 - `gpt3TurboBig` - model for larger size of documents
 - `gpt4` - modern model with better performance, but required approve from openAPI for usage.
 - `gpt4Big`  - modern model with better performance, but required approve from openAPI for usage. Used for larger size of documents
+- `palm` - model provided by google. It is not so good as gpt3, but it is much cheaper.
 
-it will provide you with interactive CLI for configuration. 
-It will allow you to change model type, log level and openai api key storage path.
+###### note: configuring palm
+> 1. create service account in GCP. Open you GCP project and open IAM->Service accounts page. Create service account with role Vertex AI Service Agent. Download json file with service account.
+> 2. Save json for service account to `~/.jess/jess-service-account.json`
+> 3. Edit config to provide path to service account file in key `service_account_key_path`
+> 4. Edit config to provide key `gcp_project_id` - you can get it in gpc console
+> 5. Enable Vertex AI API in GCP console. open Vertex AI API page and click "Enable All API" button.
+> 6. Provide access to your service account to Vertex AI API. open your GCP project and open IAM page. Add you service account to Vertex AI API Admin role. wait for approx 5 minutes.
+> 7. Edit config file and set model to `palm`
+> 8. check that everything is working with command `jess test test`
+
 
 in case you want clean your context storage and start from scratch you can delete db file. this file stored in `~/.llmchat-client`.
 for deleting just use command:
