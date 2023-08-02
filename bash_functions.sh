@@ -39,7 +39,7 @@ get_os() {
 check_windows_os() {
   if [ "$1" == "windows" ]; then
     echo -e "\033[31mERROR: Windows is not supported by this builder \033[m"
-    echo "try to use build.ps1 instead of build.sh"
+    echo "try to use build.ps1 instead of build_win.bat"
     exit 1
   fi
 }
