@@ -11,8 +11,6 @@ import (
 	"strings"
 )
 
-const configFilePath = "/Users/nik/.jess/config.yaml"
-
 func DefineConfigCommand(config *utils.AppConfig) *cli.Command {
 	return &cli.Command{
 		Name:   "config",
@@ -96,23 +94,23 @@ func setupValueWithKeyInputInvitation(configKey string, recommendationMsg string
 
 		println("Config key is: " + configKey)
 		println("App config name is: " + appConfigName)
-		oldConfig, err := utils.LoadConfig(configFilePath)
+		oldConfig, err := utils.LoadConfig(utils.GetDefaultConfigFilePath())
 		if err != nil {
 			println("error while loading old config file during changing value")
 			logrus.Panic(err)
 		}
 		utils.PrintFieldValue(oldConfig, appConfigName, "OLD")
-		viper.SetConfigFile(configFilePath)
+		viper.SetConfigFile(utils.GetDefaultConfigFilePath())
 		viper.ReadInConfig()
 		viper.Set(configKey, newValue)
 		viper.WriteConfig()
-		newConfig, err := utils.LoadConfig(configFilePath)
+		newConfig, err := utils.LoadConfig(utils.GetDefaultConfigFilePath())
 		if err != nil {
 			println("error while loading updated config file during changing value")
 			logrus.Panic(err)
 		}
 		utils.PrintFieldValue(newConfig, appConfigName, "NEW")
-		msgPath := "value was changed in config file: " + configFilePath
+		msgPath := "value was changed in config file: " + utils.GetDefaultConfigFilePath()
 		utils.PrintlnYellow(msgPath)
 	}
 }
