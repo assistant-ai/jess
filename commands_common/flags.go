@@ -57,6 +57,6 @@ func GoogleDriveFilesFlag() cli.Flag {
 	return &cli.StringSliceFlag{
 		Name:    "gdrive",
 		Aliases: []string{"g", "gd"},
-		Usage:   "[Optional] Google Drive file ID",
+		Usage:   "[Optional] Google Drive file ID, or google document URL",
 	}
 }

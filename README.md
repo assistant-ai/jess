@@ -247,10 +247,10 @@ jess code refactor -i <input_file> -o <output_file>
 Answer plain text questions about code file with output to terminal ( ):
 - `jess code question` -  main command
 Parameters:
-- -p <question> - required
-- -c <context_id> - optional
-- -o <output_file> - optional
-- -i <input_file> - required, allow multiple files
+- `-p <question>` - required
+- `-c <context_id>` - optional
+- `-o <output_file>` - optional
+- `-i <input_file>` - required, allow multiple files
 
 ###### Examples:
 -- Simple question from one file with output to terminal:
@@ -274,10 +274,10 @@ Re-writing mail (input file) with output to terminal ( -o <output_file> - option
 Main command:
 - `jess text solve` -  main command
   Parameters:
-- -p <problem> - required
-- -i <input_file> - required, allow multiple files
-- -o <output_file> - optional
-- -c <context_id> - optional
+- `-p <problem>` - required
+- `-i <input_file>` - required, allow multiple files
+- `-o <output_file>` - optional
+- `-c <context_id>` - optional
 
 
 ```bash
@@ -290,10 +290,10 @@ Fixing grammar (input file) with output to terminal ( -o <output_file> - optiona
 Main command:
 - `jess text grammar` -  main command
   Parameters:
-- -p <problem> - required
-- -c <context_id> - optional
-- -i <input_file> - required, allow multiple files
-- -o <output_file> - optional
+- `-p <problem>` - required
+- `-c <context_id>` - optional
+- `-i <input_file>` - required, allow multiple files
+- `-o <output_file>` - optional
 
 
 ```bash
@@ -306,16 +306,16 @@ Suggest steps for solving problems with asking question:
 Main command:
 - `jess text solve` -  main command
   Parameters:
-- -p <promt> - required. description of your problem
-- -c <context_id> - optional
-- -i <input_file> - optional
-- -o <output_file> - optional
+- `-p <promt>` - required. description of your problem
+- `-c <context_id>` - optional
+- `-i <input_file>` - optional
+- `-o <output_file>` - optional
 
 ```bash
 jess text solve -p "Describe your problem"
 ```
 
-#### creating user story
+#### Creating user story
 
 Creating user story based on provided topic. Additional information about topic could be provided in input file (-i <input_file> - optional). In input file text in square brackets **[ could be additional simple instruction ]** for Jess.  Output by default to terminal (-o <output_file> - optional)
 
@@ -325,16 +325,32 @@ jess text user_story -p "As user I want to do send request to my server"
 ```
 
 Parameters:
-- -p <promt> - optional. Short description of your user story
-- -i <input_file> - optional. Additional information about topic could be provided in input file. However it could be used as main source of information for jess.
-- -o <output_file> - optional. Output by default to terminal
-- -c <context_id> - optional. Context id for storing user story. 
+- `-p <promt>` - optional. Short description of your user story
+- `-i <input_file>` - optional. Additional information about topic could be provided in input file. However it could be used as main source of information for jess.
+- `-o <output_file>` - optional. Output by default to terminal
+- `-c <context_id>` - optional. Context id for storing user story. 
+
+
+#### Generating prompts 
+
+Main idea of `jess text generate_prompt` is to generate extended prompt for specific topic. It could be useful for generating prompts when you don't know anything about the topics and want to get started information from Jess. Jess will help you to generate prompt for specific topic. By default, you will get prompt that requested: general info about summary, SWOT information about topic, requested information about 5 related fields and 5 roles that could be useful for that topic. After that in jess response there would be suggestion section with 5 suggestions, that you just need to copy to suggested prompt. after that jess will return 5 questions that could be used for that topic \[ in brackets you will see answers examples that could help to improve prompt to make it more precise\].
+
+Main command:
+```bash
+jess text generate_prompt -p "I want more money doing nothing"
+```
+
+Parameters:
+- `-p <promt>` - optional. Short description of topic you want to generate prompt about.
+- `-i <input_file>` - optional. Additional information about topic could be provided in input file. However, it could be used as main source of information for jess.
+- `-o <output_file>` - optional. Output by default to terminal
+- `-c <context_id>` - optional. Context id for storing prompt histories.
 
 
 
 ### 5. **Google documents processing**
 
-Request for specific promt to google document
+Request for specific prompt to google document
 
 
 ```bash
