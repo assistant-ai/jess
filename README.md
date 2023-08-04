@@ -33,9 +33,9 @@ install.sh
 ```
 
 
-### lazy installation from link
+### Installation from link
 
-Execute this link. it will download latest jess from github releases and insall it. 
+Execute this short bash command, it will download latest jess from github releases and install it. 
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/assistant-ai/jess/master/install.sh | bash
