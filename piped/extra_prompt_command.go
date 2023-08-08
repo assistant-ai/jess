@@ -1,22 +1,83 @@
-package commands_text
+package piped
 
 import (
+	jess_cli "github.com/assistant-ai/jess/cli"
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/prompt"
+	"github.com/assistant-ai/jess/utils"
+	"github.com/assistant-ai/llmchat-client/client"
+	"github.com/prometheus/common/log"
 	"github.com/urfave/cli/v2"
 )
 
-type PromptGeneratorCommand struct{}
-
-func (c *PromptGeneratorCommand) Name() string {
-	return "generate_prompt"
+type DoubleBaseCommand interface {
+	Flags() []cli.Flag
+	PreparePromptForDoubleAction(cliContext *cli.Context) (string, error)
+	Name() string
+	Usage() string
 }
 
-func (c *PromptGeneratorCommand) Usage() string {
-	return "generate description of user story based on the topic"
+type DoubleJessCommand struct {
+	Command DoubleBaseCommand
 }
 
-func (c *PromptGeneratorCommand) Flags() []cli.Flag {
+func (c *DoubleJessCommand) DefineCommand(llmClient *client.Client) *cli.Command {
+	return &cli.Command{
+		Name:   c.Command.Name(),
+		Usage:  c.Command.Usage(),
+		Action: c.handleDoubleAction(llmClient),
+		Flags:  c.Command.Flags(),
+	}
+}
+
+func (c *DoubleJessCommand) handleDoubleAction(llmClient *client.Client) func(cliContext *cli.Context) error {
+	return func(cliContext *cli.Context) error {
+		context := cliContext.String("context")
+		userFinalPrompt := cliContext.String("prompt")
+		filePathForFinalAnswer := cliContext.String("output")
+		filePathForPromptOutput := cliContext.String("output_prompt")
+
+		initialPrompt, err := c.Command.PreparePromptForDoubleAction(cliContext)
+
+		if err != nil {
+			log.Errorf("Error while sending message: %v", err)
+			return err
+		}
+
+		utils.PrintlnCyan("USER PROMPT:\n" + userFinalPrompt + "\n\n")
+		generatedPrompt, err := jess_cli.ExecutePrompt(llmClient, initialPrompt, context)
+
+		err = utils.AnswersOutput(filePathForPromptOutput, generatedPrompt)
+
+		if err != nil {
+			log.Errorf("Error while saving file: %v", err)
+			return err
+		}
+
+		answer, err := jess_cli.ExecutePrompt(llmClient, generatedPrompt, context)
+
+		err = utils.AnswersOutput(filePathForFinalAnswer, answer)
+		if err != nil {
+			log.Errorf("Error while saving file: %v", err)
+			return err
+		}
+
+		return nil
+	}
+
+}
+
+type DoublePromptCommand struct{}
+
+func (c *DoublePromptCommand) Name() string {
+	return "dp"
+}
+
+func (c *DoublePromptCommand) Usage() string {
+	return "Running prompt in double mode. Means you give a topic. Jess generate basic prompt and generate 2 files - one with generated prompt for future editint and second with the result of the prompt."
+}
+
+func (c *DoublePromptCommand) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:     "prompt",
@@ -25,6 +86,11 @@ func (c *PromptGeneratorCommand) Flags() []cli.Flag {
 			Value:    "",
 			Required: false,
 		},
+		&cli.StringFlag{
+			Name:    "output_prompt",
+			Aliases: []string{"op"},
+			Usage:   "[Optional] Output file path for prompt, by default output will be printed to terminal",
+		},
 		commands_common.InputFilesFlag(),
 		commands_common.ContextFlag(),
 		commands_common.OutputFlag(),
@@ -32,7 +98,7 @@ func (c *PromptGeneratorCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *PromptGeneratorCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
+func (c *DoublePromptCommand) PreparePromptForDoubleAction(cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
 	urls := cliContext.StringSlice("url")

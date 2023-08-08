@@ -26,6 +26,19 @@ func ExtractTextFromURL(url string) (string, error) {
 	return readableText, nil
 }
 
+func AnswersOutput(output string, answer string) error {
+	if output != "" {
+		err := os.WriteFile(output, []byte(answer), 0644)
+		if err != nil {
+			return err
+		}
+	} else {
+		PrintlnCyan(answer)
+		return nil
+	}
+	return nil
+}
+
 // TODO fix error handling and returnig erorrs
 func IfFileWithAPiKeyExists(apiKeyPath string) bool {
 	exists, _ := fs.PathExists(apiKeyPath)

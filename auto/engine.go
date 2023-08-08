@@ -113,7 +113,7 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 				return err
 			}
 		} else if cmd.Action == "memory" {
-			fmt.Println("Jess is asking update memeory with: " + cmd.Context)
+			fmt.Println("Jess is asking update memory with: " + cmd.Context)
 			if memory == "" {
 				memory = cmd.Context
 			} else {
@@ -151,7 +151,7 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 }
 
 func joinMemoryOldAndNew(oldMemory string, newMemory string, llmClient *client.Client) (string, error) {
-	answer, err := llmClient.SenRandomContextMessage("There are old memory and new memory, you have to join them in the way that will capture all the same informaion with all the details but result message in size should not be more than 500 words. Old memory: " + oldMemory + "\n\n new memory: " + newMemory)
+	answer, err := llmClient.SenRandomContextMessage("There are old memory and new memory, you have to join them in the way that will capture all the same information with all the details but result message in size should not be more than 500 words. Old memory: " + oldMemory + "\n\n new memory: " + newMemory)
 	if err != nil {
 		return "", err
 	}

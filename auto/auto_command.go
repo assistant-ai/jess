@@ -11,7 +11,7 @@ import (
 func DefineAutoCommand(llmClient *client.Client, logger *logrus.Logger) *cli.Command {
 	return &cli.Command{
 		Name:   "auto",
-		Usage:  "do shit end-to-end",
+		Usage:  "do requested commands end-to-end",
 		Action: handleAutoAction(llmClient, logger),
 		Flags:  autoFlags(),
 	}
