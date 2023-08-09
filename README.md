@@ -367,6 +367,8 @@ jess process -g ${DOCUMENT_URL} -p "give me short summary about this document"
 
 ### 6. **Double prompting**
 
+
+#### Generating prompts - Experimental feature
 Main idea that Jess will run some prompt generation for you for requested topic. It will also could save generated prompt to output file, so you could use (edit) it later. 
 
 Main command:
@@ -381,10 +383,24 @@ Parameters:
 - `-op <output_prompt_file>` - optional. File for saving generated prompt. Output by default to terminal
 - `-c <context_id>` - optional. Context id for storing prompt histories.
 
-
 ```bash
 go run main.go pipe dp -p "who is Marty McFly" -o "prompt_result_MM" -op "generated_prompt_MM"
 ```
+
+#### Generating commit messages for git - Experimental feature
+
+Main Idea that user will provide folder to Jess. And jess based on results of `git diff` analyze changes and generate commit message for that changes. 
+user coudl see this messages in terminal or save it to file.
+
+```bash
+go run main.go pipe gmc -i <path_to_folder>
+```
+
+Parameters:
+- `-i <inpiut_git_repo>` - mandatory. Path to girt repo.
+- `-o <output_file>` - optional. Output by default to terminal.
+
+
 
 
 # DELETING JESS
