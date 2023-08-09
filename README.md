@@ -373,7 +373,7 @@ Main idea that Jess will run some prompt generation for you for requested topic.
 
 Main command:
 ```bash
-go run main.go pipe dp -p "who is Doc Brown" 
+jess pipe dp -p "who is Doc Brown" 
 ```
 
 Parameters:
@@ -384,7 +384,7 @@ Parameters:
 - `-c <context_id>` - optional. Context id for storing prompt histories.
 
 ```bash
-go run main.go pipe dp -p "who is Marty McFly" -o "prompt_result_MM" -op "generated_prompt_MM"
+jess pipe dp -p "who is Marty McFly" -o "prompt_result_MM" -op "generated_prompt_MM"
 ```
 
 #### Generating commit messages for git - Experimental feature
@@ -393,7 +393,7 @@ Main Idea that user will provide folder to Jess. And jess based on results of `g
 user coudl see this messages in terminal or save it to file.
 
 ```bash
-go run main.go pipe gmc -i <path_to_folder>
+jess pipe gmc -i <path_to_folder>
 ```
 
 Parameters:
