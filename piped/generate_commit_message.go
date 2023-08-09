@@ -74,7 +74,7 @@ func (c *GenerateCommitJessCommand) handleActionForCommit(llmClient *client.Clie
 
 		var result string
 		for _, file := range JsonWithComments {
-			result += fmt.Sprintf("**%s**:\n%s\n\n", file.Path, file.jessComment)
+			result += fmt.Sprintf("%s:\n%s\n\n", file.Path, file.jessComment)
 		}
 
 		err = utils.AnswersOutput(filePathForFinalAnswer, result)
