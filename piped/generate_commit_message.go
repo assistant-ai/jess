@@ -10,8 +10,6 @@ import (
 	"github.com/urfave/cli/v2"
 	"os"
 	"os/exec"
-	"os/user"
-	"path/filepath"
 	"strings"
 )
 
@@ -37,19 +35,18 @@ func (c *GenerateCommitJessCommand) DefineCommand(llmClient *client.Client) *cli
 func (c *GenerateCommitJessCommand) handleActionForCommit(llmClient *client.Client) func(cliContext *cli.Context) error {
 	return func(cliContext *cli.Context) error {
 		filePathForFinalAnswer := cliContext.String("output_file")
-		inputFolder, err := expandTilde(cliContext.String("input_folder"))
+		inputFolder, err := utils.ExpandTilde(cliContext.String("input_folder"))
 		if err != nil {
 			return err
 		}
 
-		//ckech if the input folder is valid folder and if it exists
-		_, err = isValidPath(inputFolder)
+		_, err = utils.IsValidPath(inputFolder)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return nil
 		}
-		// check if the input folder is a git repository
-		err = isGitRepository(inputFolder)
+
+		err = utils.IsGitRepository(inputFolder)
 		if err != nil {
 			return nil
 		}
@@ -60,18 +57,15 @@ func (c *GenerateCommitJessCommand) handleActionForCommit(llmClient *client.Clie
 			return nil
 		}
 
-		JsonWithComments, err := iterateJSONAndMarkChanges(changedFiles, llmClient)
+		ChangedFilesMapWithComments, err := iterateJSONAndMarkChanges(changedFiles, llmClient)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return nil
 		}
 
-		var result string
-		for _, file := range JsonWithComments {
-			result += fmt.Sprintf("%s:\n%s\n\n", file.Path, file.jessComment)
-		}
+		resultString := joinCommentsToString(ChangedFilesMapWithComments)
 
-		err = utils.AnswersOutput(filePathForFinalAnswer, result)
+		err = utils.AnswersOutput(filePathForFinalAnswer, resultString)
 		if err != nil {
 			log.Errorf("Error while saving file: %v", err)
 			return err
@@ -119,6 +113,14 @@ func (c *GenerateCommitCommand) PreparePromptForDoubleAction(cliContext *cli.Con
 		return "", err
 	}
 	return finalPrompt, nil
+}
+
+func joinCommentsToString(ChangedFilesMapWithComments []ChangedFile) string {
+	var result string
+	for _, file := range ChangedFilesMapWithComments {
+		result += fmt.Sprintf("%s:\n%s\n\n", file.Path, file.jessComment)
+	}
+	return result
 }
 
 func getChangedFilesWithDiffs(inputFolder string) ([]ChangedFile, error) {
@@ -212,57 +214,4 @@ func iterateJSONAndMarkChanges(changedFiles []ChangedFile, llmClient *client.Cli
 		}
 	}
 	return changedFiles, nil
-}
-
-func isGitRepository(folderPath string) error {
-	folderPath, err := expandTilde(folderPath)
-	if err != nil {
-		return err
-	}
-	gitDir := filepath.Join(folderPath, ".git")
-	_, err = os.Stat(gitDir)
-	if err != nil {
-		log.Errorf("Look like provided folder is not git repository. give us another folder: %v", err)
-		return err
-	}
-	return nil
-}
-
-// TODO reuse this function to fix other error with path
-func expandTilde(path string) (string, error) {
-	if path[:2] == "~/" {
-		usr, err := user.Current()
-		if err != nil {
-			return "", err
-		}
-		path = filepath.Join(usr.HomeDir, path[2:])
-	}
-	return path, nil
-}
-
-func isFolderPath(path string) (bool, error) {
-	path, err := expandTilde(path)
-	if err != nil {
-		return false, err
-	}
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return false, fmt.Errorf("%s does not exist", path)
-		}
-		return false, err
-	}
-
-	return fileInfo.IsDir(), nil
-}
-
-func isValidPath(path string) (bool, error) {
-	isFolder, err := isFolderPath(path)
-	if err != nil {
-		return false, err
-	}
-	if !isFolder {
-		return false, fmt.Errorf("%s is not a folder", path)
-	}
-	return true, nil
 }

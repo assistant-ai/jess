@@ -7,6 +7,8 @@ import (
 	"github.com/prometheus/common/log"
 	"net/http"
 	"os"
+	"os/user"
+	"path/filepath"
 	"regexp"
 )
 
@@ -37,6 +39,59 @@ func AnswersOutput(output string, answer string) error {
 		return nil
 	}
 	return nil
+}
+
+func IsGitRepository(folderPath string) error {
+	folderPath, err := ExpandTilde(folderPath)
+	if err != nil {
+		return err
+	}
+	gitDir := filepath.Join(folderPath, ".git")
+	_, err = os.Stat(gitDir)
+	if err != nil {
+		log.Errorf("Look like provided folder is not git repository. give us another folder: %v", err)
+		return err
+	}
+	return nil
+}
+
+// TODO reuse this function to fix other error with path
+func ExpandTilde(path string) (string, error) {
+	if path[:2] == "~/" {
+		usr, err := user.Current()
+		if err != nil {
+			return "", err
+		}
+		path = filepath.Join(usr.HomeDir, path[2:])
+	}
+	return path, nil
+}
+
+func isFolderPath(path string) (bool, error) {
+	path, err := ExpandTilde(path)
+	if err != nil {
+		return false, err
+	}
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, fmt.Errorf("%s does not exist", path)
+		}
+		return false, err
+	}
+
+	return fileInfo.IsDir(), nil
+}
+
+func IsValidPath(path string) (bool, error) {
+	isFolder, err := isFolderPath(path)
+	if err != nil {
+		return false, err
+	}
+	if !isFolder {
+		return false, fmt.Errorf("%s is not a folder", path)
+	}
+	return true, nil
 }
 
 // TODO fix error handling and returnig erorrs
