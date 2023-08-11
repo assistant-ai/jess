@@ -57,7 +57,7 @@ func (c *GenerateCommitJessCommand) handleActionForCommit(llmClient *client.Clie
 			return nil
 		}
 
-		ChangedFilesMapWithComments, err := iterateJSONAndMarkChanges(changedFiles, llmClient)
+		ChangedFilesMapWithComments, err := iterateChangeFilesAndaddComments(changedFiles, llmClient)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return nil
@@ -197,7 +197,7 @@ func setChangeFiledInitialComment(filePath string, changedFiles []ChangedFile, i
 	return changedFiles
 }
 
-func iterateJSONAndMarkChanges(changedFiles []ChangedFile, llmClient *client.Client) ([]ChangedFile, error) {
+func iterateChangeFilesAndaddComments(changedFiles []ChangedFile, llmClient *client.Client) ([]ChangedFile, error) {
 
 	prePrompt := "forget about all previos request of same requests. analyze it from start. Generate concise commit descriptions from the given JSON data containing changed file paths and their respective diffs. Each description should be in a Markdown-friendly format suitable for GitHub commits. The JSON contains an array of objects, each having a \"path\" field representing the file path and a \"diff\" field with the file's changes. analyze changes, by methods or functions, and provided explanation of method/functions, not a line. If there were one or more comment per file just add that 'there was some comments added'. Provide a formatted list of commit descriptions corresponding to each file path and its changes. your comments should be as short as possible, but cover sense and main idea of changes. "
 
