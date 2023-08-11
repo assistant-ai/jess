@@ -2,6 +2,8 @@ package cli
 
 import (
 	"fmt"
+	"github.com/assistant-ai/llmchat-client/client"
+	"github.com/prometheus/common/log"
 	"os"
 	"text/tabwriter"
 
@@ -37,4 +39,16 @@ func HandleError(err error) {
 		cli.Exit(err, 1)
 		panic(err)
 	}
+}
+
+func ExecutePrompt(llmClient *client.Client, finalPrompt string, context string) (string, error) {
+	quit := make(chan bool)
+	go AnimateThinking(quit)
+	answer, err := llmClient.SendMessageWithContextDepth(finalPrompt, context, 0, false)
+	if err != nil {
+		log.Errorf("Error while sending message: %v", err)
+		return "", err
+	}
+	quit <- true
+	return answer, nil
 }

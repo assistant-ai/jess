@@ -1,14 +1,13 @@
 package commands_common
 
 import (
+	jess_cli "github.com/assistant-ai/jess/cli"
 	"github.com/assistant-ai/jess/utils"
+	"github.com/assistant-ai/llmchat-client/client"
 	"github.com/prometheus/common/log"
+	"github.com/urfave/cli/v2"
 	"os"
 	"strings"
-
-	jess_cli "github.com/assistant-ai/jess/cli"
-	"github.com/assistant-ai/llmchat-client/client"
-	"github.com/urfave/cli/v2"
 )
 
 type BaseCommand interface {
@@ -39,10 +38,7 @@ func (c *JessCommand) handleAction(llmClient *client.Client) func(cliContext *cl
 		if err != nil {
 			return err
 		}
-		quit := make(chan bool)
-		go jess_cli.AnimateThinking(quit)
-		answer, err := llmClient.SendMessageWithContextDepth(finalPrompt, context, 0, false)
-		quit <- true
+		answer, err := jess_cli.ExecutePrompt(llmClient, finalPrompt, context)
 		if err != nil {
 			log.Errorf("Error while sending message: %v", err)
 			return err

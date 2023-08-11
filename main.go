@@ -10,6 +10,7 @@ import (
 	"github.com/assistant-ai/jess/commands_config"
 	"github.com/assistant-ai/jess/commands_context"
 	"github.com/assistant-ai/jess/commands_text"
+	"github.com/assistant-ai/jess/piped"
 	"github.com/assistant-ai/jess/utils"
 	"github.com/assistant-ai/llmchat-client/client"
 	"github.com/assistant-ai/llmchat-client/db"
@@ -73,6 +74,7 @@ func defineCommands(config *utils.AppConfig, logger *logrus.Logger) ([]*cli.Comm
 		commands_config.DefineConfigCommand(config),
 		commands_context.DefineServeCommand(llmClient),
 		auto.DefineAutoCommand(llmClient, logger),
+		piped.DefinePipedCommand(llmClient),
 	}
 
 	return commands, nil
@@ -82,7 +84,7 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 	var llmClient *client.Client
 	var err error
 	modelName := config.ModelName
-	fmt.Printf("Model that is used for this task: %s\n", modelName)
+	utils.PrintlnCyan("Model that is used for this task: " + modelName + "\n")
 	logger.WithFields(logrus.Fields{
 		"config.ModelName": config.ModelName,
 	}).Debug("Creating client")
@@ -125,7 +127,7 @@ func initClient(config *utils.AppConfig, logger *logrus.Logger) (*client.Client,
 		utils.PrintlnYellow("jess config -c 'id'")
 		return nil, errors.New("model is not specified")
 	}
-	llmClient.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assitent for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
+	llmClient.DefaultContext = `Your name is Jessica, but everyone call you Jess. You are AI assistant for software developers to help them with their code: explain/refactor/answer questions. Mostly you used as CLI tool, but not only.
 
 When replying, consider information gaps and ask for clarification if needed.
 Limit this to avoid excess.

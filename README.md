@@ -159,6 +159,8 @@ Jessica offers the following features:
    - Grammar: fix grammar in the text.
    - Solve: suggest steps for solving provided problem.
 5. **Process google documents**: Jessica can process google documents and provide you with the summary of the document. It is possible to use it for summarizing the code documentation. or do any other test action from the promt. Right now Jessica can only read google documents. It is not possible to edit them. output only to console. 
+6. **Doubleprompting**: Jessica will execute double prompting for you. YOu will ask some topic, and jess generate more (predefined) detailed prompt for your topic and then execute it for you. It will call llm-client twice.
+
 
 ## Usage
 
@@ -362,6 +364,43 @@ or
 ```bash
 jess process -g ${DOCUMENT_URL} -p "give me short summary about this document"
 ```
+
+### 6. **Double prompting**
+
+
+#### Generating prompts - Experimental feature
+Main idea that Jess will run some prompt generation for you for requested topic. It will also could save generated prompt to output file, so you could use (edit) it later. 
+
+Main command:
+```bash
+jess pipe dp -p "who is Doc Brown" 
+```
+
+Parameters:
+- `-p <promt>` - optional. Short description of topic you want to generate prompt about.
+- `-i <input_file>` - optional. Additional information about topic could be provided in input file. However, it could be used as main source of information for jess.
+- `-o <output_file>` - optional. Output by default to terminal
+- `-op <output_prompt_file>` - optional. File for saving generated prompt. Output by default to terminal
+- `-c <context_id>` - optional. Context id for storing prompt histories.
+
+```bash
+jess pipe dp -p "who is Marty McFly" -o "prompt_result_MM" -op "generated_prompt_MM"
+```
+
+#### Generating commit messages for git - Experimental feature
+
+Main Idea that user will provide folder to Jess. And jess based on results of `git diff` analyze changes and generate commit message for that changes. 
+user coudl see this messages in terminal or save it to file.
+
+```bash
+jess pipe gmc -i <path_to_folder>
+```
+
+Parameters:
+- `-i <inpiut_git_repo>` - mandatory. Path to girt repo.
+- `-o <output_file>` - optional. Output by default to terminal.
+
+
 
 
 # DELETING JESS
