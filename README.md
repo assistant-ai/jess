@@ -16,6 +16,14 @@ build_and_nstall.sh
 
 it will create binaries with latest (could be not tested) changes and set binaries to right folder.
 
+### Install using [Homebrew](https://brew.sh) (MacOS only)
+
+Alternatively, if you are using macOS, you can install jess via Homebrew tap.
+
+```
+brew install assistant-ai/tap/jess
+```
+
 ### Build from source
 
 This will build new version of `jess` in to oyu directory. depends on your platform it could have different names. but it will always started with `jess-*`
