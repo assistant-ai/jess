@@ -157,7 +157,7 @@ rm ~/.llmchat-client
 Jessica offers the following features:
 
 1. **Manage Dialog**: Start, continue, list, show, and delete conversations with the AI assistant.
-2. **Context managmet**: Working with context that already exist in local storage.
+2. **Context management**: Working with context that already exist in local storage.
 3. **Code Processing**: Perform various tasks such as:
    - Explain: Describe the code in plain English.
    - Refactor: Refactor the code following best practices.
@@ -167,7 +167,7 @@ Jessica offers the following features:
    - Grammar: fix grammar in the text.
    - Solve: suggest steps for solving provided problem.
 5. **Process google documents**: Jessica can process google documents and provide you with the summary of the document. It is possible to use it for summarizing the code documentation. or do any other test action from the promt. Right now Jessica can only read google documents. It is not possible to edit them. output only to console. 
-6. **Doubleprompting**: Jessica will execute double prompting for you. YOu will ask some topic, and jess generate more (predefined) detailed prompt for your topic and then execute it for you. It will call llm-client twice.
+6. **Double-prompting**: Jessica will execute double prompting for you. YOu will ask some topic, and jess generate more (predefined) detailed prompt for your topic and then execute it for you. It will call llm-client twice.
 
 
 ## Usage
@@ -357,6 +357,22 @@ Parameters:
 - `-c <context_id>` - optional. Context id for storing prompt histories.
 
 
+#### summarizing articles - tldr (too long, didn't read)
+
+Main idea of `jess text tldr` is to generate short summary for specific articlwa from the internet. You just need to add link to the article and jess will generate short summary for you. 
+
+Main command:
+```bash
+jess text tldr -u "https://money.com/netflix-password-sharing-crackdown-new-rules/"
+```
+
+Parameters:
+- `-p <promt>` - optional. Short description of topic you want to generate prompt about.
+- `-u <input_url>` - optional. Article from the internet, you want to summarize.
+- `-o <output_file>` - optional. Output by default to terminal
+- `-c <context_id>` - optional. Context id for storing prompt histories.
+- `-sp` - optional. \[experimental function\] Show prompt that was used for summarization. the basic one and the final one. it would be printed to terminal. by default false.
+
 
 ### 5. **Google documents processing**
 
@@ -398,7 +414,7 @@ jess pipe dp -p "who is Marty McFly" -o "prompt_result_MM" -op "generated_prompt
 #### Generating commit messages for git - Experimental feature
 
 Main Idea that user will provide folder to Jess. And jess based on results of `git diff` analyze changes and generate commit message for that changes. 
-user coudl see this messages in terminal or save it to file.
+user could see this messages in terminal or save it to file.
 
 ```bash
 jess pipe gmc -i <path_to_folder>
