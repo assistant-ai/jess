@@ -117,6 +117,13 @@ func IsServiceAccountJsonFileExists(serviceAccountKeyPath string) (bool, error) 
 	return exists, nil
 }
 
+func PrintPrompt(showPrompt bool, basicPrompt string, finalPrompt string) {
+	if showPrompt {
+		PrintlnYellow("BASIC_PROMPT:\n\n" + basicPrompt + "\n\n")
+		PrintlnYellow("FINAL_PROMPT:\n\n" + finalPrompt + "\n\n")
+	}
+}
+
 func getApiKeyFromFile(OpenAiApiKeyPath string) string {
 	apiKey, err := os.ReadFile(OpenAiApiKeyPath)
 	if err != nil {

@@ -25,6 +25,9 @@ func DefineTextCommand(llmClient *client.Client) *cli.Command {
 	generatePromptCommandjson := commands_common.JessCommand{
 		Command: &PromptGeneratorCommandJson{},
 	}
+	tldrCommand := commands_common.JessCommand{
+		Command: &TLDR{},
+	}
 	return &cli.Command{
 		Name:  "text",
 		Usage: "Actions to take with text",
@@ -35,6 +38,7 @@ func DefineTextCommand(llmClient *client.Client) *cli.Command {
 			userStoryCommand.DefineCommand(llmClient),
 			generatePromptCommand.DefineCommand(llmClient),
 			generatePromptCommandjson.DefineCommand(llmClient),
+			tldrCommand.DefineCommand(llmClient),
 		},
 	}
 }
