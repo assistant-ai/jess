@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 func ExtractTextFromURL(url string) (string, error) {
@@ -115,6 +116,14 @@ func IsServiceAccountJsonFileExists(serviceAccountKeyPath string) (bool, error) 
 		log.Fatalf("%s Config file not found at: %s", err, serviceAccountKeyPath)
 	}
 	return exists, nil
+}
+
+func ReplaceSpacesWithUnderscores(input string) string {
+	result_name := strings.ReplaceAll(input, " ", "_")
+	result_name = strings.ReplaceAll(result_name, ".", "")
+	result_name = strings.ReplaceAll(result_name, "-", "_")
+	result_name = strings.ReplaceAll(result_name, "'", "")
+	return result_name
 }
 
 func PrintPrompt(showPrompt bool, basicPrompt string, finalPrompt string) {

@@ -33,7 +33,6 @@ const Tldr = `{
       {
         "task": "each section should have own number and title."
       },
-
       {
         "task": "do not add any additional information.Including your comments about quality of the answer or translation."
       },
