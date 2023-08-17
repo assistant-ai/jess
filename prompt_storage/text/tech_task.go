@@ -1,6 +1,6 @@
 package text
 
-const TECH_TASK_PROMPT = "you need to use next json template with instruction in it to generate your answer." + "\n" + tech_task_preprompt_json
+const TECH_TASK_PROMPT = "you need to use next json template with instruction in it to technical sask that user will provide you." + "\n" + tech_task_preprompt_json
 
 const tech_task_preprompt_json = `
 {

@@ -35,7 +35,7 @@ func (c *TechTaskCommand) Flags() []cli.Flag {
 
 func (c *TechTaskCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
-	userPrompt := "topic or user story for searching bugs: " + cliContext.String("prompt")
+	userPrompt := "topic or user story for generating technical task: " + cliContext.String("prompt")
 	urls := cliContext.StringSlice("url")
 	gDriveFiles := cliContext.StringSlice("gdrive")
 	prePrompt := text.TECH_TASK_PROMPT
