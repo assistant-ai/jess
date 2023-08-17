@@ -8,6 +8,7 @@ import (
 	"github.com/assistant-ai/jess/prompt_storage/text"
 	"github.com/assistant-ai/jess/utils"
 	"github.com/assistant-ai/llmchat-client/client"
+	"github.com/google/uuid"
 	"github.com/prometheus/common/log"
 	"github.com/urfave/cli/v2"
 	"strings"
@@ -28,7 +29,6 @@ func (c *GenerateDetailedUserJessCommand) DefineCommand(llmClient *client.Client
 
 func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *client.Client) func(cliContext *cli.Context) error {
 	return func(cliContext *cli.Context) error {
-		//context := cliContext.String("context")
 		err := error(nil)
 		initialUserTopic := cliContext.String("prompt")
 		// TODO add validation if file is empty or not, here could be issue that related if it is emprty or not, if it is empty then there should nt be ech for tilda
@@ -37,78 +37,110 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 		if err != nil {
 			return err
 		}
-
 		_, err = utils.IsValidPath(outputFolder)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return nil
 		}
-
-		//initialPrompt, err := c.Command.PreparePromptForDoubleAction(cliContext)
-
-		if err != nil {
-			log.Errorf("Error while sending message: %v", err)
-			return err
-		}
+		filePathForPromptOutput := outputFolder + "/00_user_story.txt"
 
 		utils.PrintlnCyan("USER PROMPT:\n" + initialUserTopic + "\n\n")
-		// Section that responsible for generating user story file
-		//detailedUserStoryAnswer, err := jess_cli.ExecutePrompt(llmClient, initialPrompt, context)
-		//filePathForPromptOutput := outputFolder + "/00_user_story.txt"
-		//err = utils.AnswersOutput(filePathForPromptOutput, detailedUserStoryAnswer)
+		err = generateUserStory(cliContext, c, llmClient, filePathForPromptOutput)
+		if err != nil {
+			return err
+		}
 
-		// Section that responsible for generating sub tasks files
+		// Section that responsible for generating sub-tasks files
 		utils.PrintlnCyan("\nCollecting list of sub tasks for generated user story...\n")
-		path_to_file_withUser_story := "/Users/nik/GitHub/jess/temp_experiments/us/00_user_story.txt"
-
-		finalPrompt, err := prompt.FilePromptBuilder("give me list of the subtasks from this file. return only list and nothing more. return it as json. it should be in next format: {\n\t  \"subtasks\": []}", []string{path_to_file_withUser_story}, []string{}, []string{}, "")
-		resultOfSubTasksCollections, err := jess_cli.ExecutePrompt(llmClient, finalPrompt, "")
+		subtasks, err := getListOfSubTasks(filePathForPromptOutput, llmClient)
 		if err != nil {
-			log.Errorf("Error while sending message: %v", err)
 			return err
 		}
-
-		var JsonMap map[string][]string
-		err = json.Unmarshal([]byte(resultOfSubTasksCollections), &JsonMap)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return err
-		}
-
-		subtasks := JsonMap["subtasks"]
 
 		sizeOfSubTasks := len(subtasks)
-
 		// generate list of test cases for provided user story
 		utils.PrintlnCyan("\nGenerating basic test cases for: " + strings.ToUpper(initialUserTopic) + "\n")
-		fileNameForBasicTestCases := outputFolder + "/" + fmt.Sprintf("%02d", sizeOfSubTasks+1) + "_BasicTestCases.txt"
-		// TODO need to implement of using file with detailes if it was provided to the command. Right now it is hard to handle issues with empty files
-		promptForbugHunting, err := prompt.FilePromptBuilder(text.BUG_HUNTER_PROMPT, []string{}, []string{}, []string{}, initialUserTopic)
+		err = generateTestCases(outputFolder, sizeOfSubTasks, initialUserTopic, llmClient)
 		if err != nil {
-			fmt.Println("Error:", err)
 			return err
 		}
-		temporaryResultBugHunting, err := jess_cli.ExecutePrompt(llmClient, promptForbugHunting, "")
-		err = utils.AnswersOutput(fileNameForBasicTestCases, temporaryResultBugHunting)
 
 		// Iterate over subtasks and print each one
 		utils.PrintlnCyan("\nGenerating subtasks for: " + strings.ToUpper(initialUserTopic) + "\n")
-		for idx, subtask := range subtasks {
-			fileNameForSubTask := outputFolder + "/" + fmt.Sprintf("%02d", idx+1) + "_" + utils.ReplaceSpacesWithUnderscores(subtask) + ".txt"
-			fmt.Println("\n", idx+1, " / ", sizeOfSubTasks, " - ", subtask)
-			// TODO need to implement of using file with detailes if it was provided to the command. Right now it is hard to handle issues with empty files
-			promptForSubTasks, err := prompt.FilePromptBuilder(text.TECH_TASK_PROMPT, []string{}, []string{}, []string{}, subtask)
-			if err != nil {
-				fmt.Println("Error:", err)
-				return err
-			}
-			temporaryResultForSubTask, err := jess_cli.ExecutePrompt(llmClient, promptForSubTasks, "")
-			err = utils.AnswersOutput(fileNameForSubTask, temporaryResultForSubTask)
+		err = generateTechTasks(subtasks, outputFolder, sizeOfSubTasks, llmClient)
+		if err != nil {
+			return err
 		}
 
 		return nil
 	}
 
+}
+
+func generateTechTasks(subtasks []string, outputFolder string, sizeOfSubTasks int, llmClient *client.Client) error {
+	for idx, subtask := range subtasks {
+		fileNameForSubTask := outputFolder + "/" + fmt.Sprintf("%02d", idx+1) + "_" + utils.ReplaceSpacesWithUnderscores(subtask) + ".txt"
+		fmt.Println("\n", idx+1, " / ", sizeOfSubTasks, " - ", subtask)
+		// TODO need to implement of using file with detailes if it was provided to the command. Right now it is hard to handle issues with empty files
+		promptForSubTasks, err := prompt.FilePromptBuilder(text.TECH_TASK_PROMPT, []string{}, []string{}, []string{}, subtask)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return err
+		}
+		temporaryResultForSubTask, err := jess_cli.ExecutePrompt(llmClient, promptForSubTasks, "")
+		err = utils.AnswersOutput(fileNameForSubTask, temporaryResultForSubTask)
+	}
+	return nil
+}
+
+func generateTestCases(outputFolder string, sizeOfSubTasks int, initialUserTopic string, llmClient *client.Client) error {
+	fileNameForBasicTestCases := outputFolder + "/" + fmt.Sprintf("%02d", sizeOfSubTasks+1) + "_BasicTestCases.txt"
+	// TODO need to implement of using file with detailes if it was provided to the command. Right now it is hard to handle issues with empty files
+	promptForBugHunting, err := prompt.FilePromptBuilder(text.BUG_HUNTER_PROMPT, []string{}, []string{}, []string{}, initialUserTopic)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
+	temporaryResultBugHunting, err := jess_cli.ExecutePrompt(llmClient, promptForBugHunting, "")
+	err = utils.AnswersOutput(fileNameForBasicTestCases, temporaryResultBugHunting)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
+	return nil
+}
+
+func generateUserStory(cliContext *cli.Context, c *GenerateDetailedUserJessCommand, llmClient *client.Client, filePathForPromptOutput string) error {
+	initialPrompt, err := c.Command.PreparePromptForDoubleAction(cliContext)
+	if err != nil {
+		log.Errorf("Error while sending message: %v", err)
+		return err
+	}
+	uuidObj, err := uuid.NewUUID() // generate random context for user story in case if it is empty it just return  prompt
+	detailedUserStoryAnswer, err := jess_cli.ExecutePrompt(llmClient, initialPrompt, uuidObj.String())
+	err = utils.AnswersOutput(filePathForPromptOutput, detailedUserStoryAnswer)
+	if err != nil {
+		log.Errorf("Error while sending message: %v", err)
+		return err
+	}
+	return nil
+}
+
+func getListOfSubTasks(filePathForPromptOutput string, llmClient *client.Client) ([]string, error) {
+	getSubTasksPrompt, err := prompt.FilePromptBuilder("give me list of the subtasks from this file. return only list and nothing more. return it as json. it should be in next format: {\n\t  \"subtasks\": []}", []string{filePathForPromptOutput}, []string{}, []string{}, "")
+	resultOfSubTasksCollections, err := jess_cli.ExecutePrompt(llmClient, getSubTasksPrompt, "")
+	if err != nil {
+		log.Errorf("Error while sending message: %v", err)
+		return nil, err
+	}
+	var JsonMap map[string][]string
+	err = json.Unmarshal([]byte(resultOfSubTasksCollections), &JsonMap)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, err
+	}
+	subtasks := JsonMap["subtasks"]
+	return subtasks, nil
 }
 
 type GenerateDetailedUserStoryCommand struct{}
