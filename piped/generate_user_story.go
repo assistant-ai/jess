@@ -31,8 +31,6 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 	return func(cliContext *cli.Context) error {
 		err := error(nil)
 		initialUserTopic := cliContext.String("prompt")
-		// TODO add validation if file is empty or not, here could be issue that related if it is emprty or not, if it is empty then there should nt be ech for tilda
-		//inputFilePath := cliContext.String("input_file")
 		outputFolder, err := utils.ExpandTilde(cliContext.String("output_folder"))
 		if err != nil {
 			return err
@@ -59,15 +57,17 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 
 		sizeOfSubTasks := len(subtasks)
 		// generate list of test cases for provided user story
+
+		// TODO need try to run in parallel
 		utils.PrintlnCyan("\nGenerating basic test cases for: " + strings.ToUpper(initialUserTopic) + "\n")
-		err = generateTestCases(outputFolder, sizeOfSubTasks, initialUserTopic, llmClient)
+		err = generateTestCases(outputFolder, sizeOfSubTasks, llmClient, cliContext, c)
 		if err != nil {
 			return err
 		}
 
 		// Iterate over subtasks and print each one
 		utils.PrintlnCyan("\nGenerating subtasks for: " + strings.ToUpper(initialUserTopic) + "\n")
-		err = generateTechTasks(subtasks, outputFolder, sizeOfSubTasks, llmClient)
+		err = generateTechTasks(subtasks, outputFolder, sizeOfSubTasks, llmClient, cliContext, c)
 		if err != nil {
 			return err
 		}
@@ -77,31 +77,39 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 
 }
 
-func generateTechTasks(subtasks []string, outputFolder string, sizeOfSubTasks int, llmClient *client.Client) error {
+func generateTechTasks(subtasks []string, outputFolder string, sizeOfSubTasks int, llmClient *client.Client, cliContext *cli.Context, c *GenerateDetailedUserJessCommand) error {
 	for idx, subtask := range subtasks {
 		fileNameForSubTask := outputFolder + "/" + fmt.Sprintf("%02d", idx+1) + "_" + utils.ReplaceSpacesWithUnderscores(subtask) + ".txt"
 		fmt.Println("\n", idx+1, " / ", sizeOfSubTasks, " - ", subtask)
-		// TODO need to implement of using file with detailes if it was provided to the command. Right now it is hard to handle issues with empty files
-		promptForSubTasks, err := prompt.FilePromptBuilder(text.TECH_TASK_PROMPT, []string{}, []string{}, []string{}, subtask)
+		promptForSubTasks, err := c.Command.PreparePromptForDoubleAction(cliContext, text.TECH_TASK_PROMPT)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return err
 		}
-		temporaryResultForSubTask, err := jess_cli.ExecutePrompt(llmClient, promptForSubTasks, "")
+		uuidObj, err := uuid.NewUUID()
+		if err != nil {
+			fmt.Println("Error:", err)
+			return err
+		}
+		temporaryResultForSubTask, err := jess_cli.ExecutePrompt(llmClient, promptForSubTasks, uuidObj.String())
 		err = utils.AnswersOutput(fileNameForSubTask, temporaryResultForSubTask)
 	}
 	return nil
 }
 
-func generateTestCases(outputFolder string, sizeOfSubTasks int, initialUserTopic string, llmClient *client.Client) error {
+func generateTestCases(outputFolder string, sizeOfSubTasks int, llmClient *client.Client, cliContext *cli.Context, c *GenerateDetailedUserJessCommand) error {
 	fileNameForBasicTestCases := outputFolder + "/" + fmt.Sprintf("%02d", sizeOfSubTasks+1) + "_BasicTestCases.txt"
-	// TODO need to implement of using file with detailes if it was provided to the command. Right now it is hard to handle issues with empty files
-	promptForBugHunting, err := prompt.FilePromptBuilder(text.BUG_HUNTER_PROMPT, []string{}, []string{}, []string{}, initialUserTopic)
+	bugHunterPrompt, err := c.Command.PreparePromptForDoubleAction(cliContext, text.BUG_HUNTER_PROMPT)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return err
 	}
-	temporaryResultBugHunting, err := jess_cli.ExecutePrompt(llmClient, promptForBugHunting, "")
+	uuidObj, err := uuid.NewUUID()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
+	temporaryResultBugHunting, err := jess_cli.ExecutePrompt(llmClient, bugHunterPrompt, uuidObj.String())
 	err = utils.AnswersOutput(fileNameForBasicTestCases, temporaryResultBugHunting)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -111,12 +119,17 @@ func generateTestCases(outputFolder string, sizeOfSubTasks int, initialUserTopic
 }
 
 func generateUserStory(cliContext *cli.Context, c *GenerateDetailedUserJessCommand, llmClient *client.Client, filePathForPromptOutput string) error {
-	initialPrompt, err := c.Command.PreparePromptForDoubleAction(cliContext)
+	initialPrompt, err := c.Command.PreparePromptForDoubleAction(cliContext, text.USER_STORY_PROMPT)
 	if err != nil {
 		log.Errorf("Error while sending message: %v", err)
 		return err
 	}
-	uuidObj, err := uuid.NewUUID() // generate random context for user story in case if it is empty it just return  prompt
+	// generate random context for user story in case if it is empty it just return  prompt
+	uuidObj, err := uuid.NewUUID()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return err
+	}
 	detailedUserStoryAnswer, err := jess_cli.ExecutePrompt(llmClient, initialPrompt, uuidObj.String())
 	err = utils.AnswersOutput(filePathForPromptOutput, detailedUserStoryAnswer)
 	if err != nil {
@@ -177,12 +190,12 @@ func (c *GenerateDetailedUserStoryCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *GenerateDetailedUserStoryCommand) PreparePromptForDoubleAction(cliContext *cli.Context) (string, error) {
+func (c *GenerateDetailedUserStoryCommand) PreparePromptForDoubleAction(cliContext *cli.Context, storedPrompt string) (string, error) {
 	filePaths := cliContext.StringSlice("input_file")
 	userPrompt := cliContext.String("prompt")
 	urls := cliContext.StringSlice("url")
 	gDriveFiles := cliContext.StringSlice("gdrive")
-	prePrompt := text.USER_STORY_PROMPT
+	prePrompt := storedPrompt
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
 		return "", err

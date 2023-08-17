@@ -104,11 +104,12 @@ func (c *GenerateCommitCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *GenerateCommitCommand) PreparePromptForDoubleAction(cliContext *cli.Context) (string, error) {
+func (c *GenerateCommitCommand) PreparePromptForDoubleAction(cliContext *cli.Context, storedPrompt string) (string, error) {
 	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
 	urls := cliContext.StringSlice("url")
 	gDriveFiles := cliContext.StringSlice("gdrive")
+	//TODO extract prompt string to json storage file and reuse basic prompt for all prompts
 	prePrompt := "Generate concise commit descriptions from the given JSON data containing changed file paths and their respective diffs. Each description should be in a Markdown-friendly format suitable for GitHub commits. The JSON contains an array of objects, each having a \"path\" field representing the file path and a \"diff\" field with the file's changes. Provide a formatted list of commit descriptions corresponding to each file path and its changes."
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
