@@ -77,7 +77,7 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 
 		subtasks := JsonMap["subtasks"]
 
-		sizeOfSubTasks := len(subtasks[0:3])
+		sizeOfSubTasks := len(subtasks)
 
 		// generate list of test cases for provided user story
 		utils.PrintlnCyan("\nGenerating basic test cases for: " + strings.ToUpper(initialUserTopic) + "\n")
@@ -93,7 +93,7 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 
 		// Iterate over subtasks and print each one
 		utils.PrintlnCyan("\nGenerating subtasks for: " + strings.ToUpper(initialUserTopic) + "\n")
-		for idx, subtask := range subtasks[0:3] {
+		for idx, subtask := range subtasks {
 			fileNameForSubTask := outputFolder + "/" + fmt.Sprintf("%02d", idx+1) + "_" + utils.ReplaceSpacesWithUnderscores(subtask) + ".txt"
 			fmt.Println("\n", idx+1, " / ", sizeOfSubTasks, " - ", subtask)
 			// TODO need to implement of using file with detailes if it was provided to the command. Right now it is hard to handle issues with empty files
