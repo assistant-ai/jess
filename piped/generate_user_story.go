@@ -11,7 +11,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/prometheus/common/log"
 	"github.com/urfave/cli/v2"
+	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
 type GenerateDetailedUserJessCommand struct {
@@ -42,6 +45,7 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 		}
 		filePathForPromptOutput := outputFolder + "/00_user_story.txt"
 
+		// Section for generation of user story
 		utils.PrintlnCyan("USER PROMPT:\n" + initialUserTopic + "\n\n")
 		err = generateUserStory(cliContext, c, llmClient, filePathForPromptOutput)
 		if err != nil {
@@ -56,18 +60,16 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 		}
 
 		sizeOfSubTasks := len(subtasks)
-		// generate list of test cases for provided user story
-
-		// TODO need try to run in parallel
-		utils.PrintlnCyan("\nGenerating basic test cases for: " + strings.ToUpper(initialUserTopic) + "\n")
+		//generate list of test cases for provided user story
+		utils.PrintlnCyan("\nGenerating basic TEST CASES for: " + strings.ToUpper(initialUserTopic) + "\n")
 		err = generateTestCases(outputFolder, sizeOfSubTasks, llmClient, cliContext, c)
 		if err != nil {
-			return err
+			fmt.Println("Error:", err)
 		}
 
-		// Iterate over subtasks and print each one
-		utils.PrintlnCyan("\nGenerating subtasks for: " + strings.ToUpper(initialUserTopic) + "\n")
-		err = generateTechTasks(subtasks, outputFolder, sizeOfSubTasks, llmClient, cliContext, c)
+		//Iterate over subtasks and print each one
+		utils.PrintlnCyan("\nGenerating SUB_TASKS for: " + strings.ToUpper(initialUserTopic) + "\n")
+		err = generateTechTasks(subtasks, outputFolder, llmClient, cliContext, c)
 		if err != nil {
 			return err
 		}
@@ -77,23 +79,24 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 
 }
 
-func generateTechTasks(subtasks []string, outputFolder string, sizeOfSubTasks int, llmClient *client.Client, cliContext *cli.Context, c *GenerateDetailedUserJessCommand) error {
+func generateTechTasks(subtasks []string, outputFolder string, llmClient *client.Client, cliContext *cli.Context, c *GenerateDetailedUserJessCommand) error {
+	sizeOfSubTasks := len(subtasks)
+	var wg sync.WaitGroup
 	for idx, subtask := range subtasks {
-		fileNameForSubTask := outputFolder + "/" + fmt.Sprintf("%02d", idx+1) + "_" + utils.ReplaceSpacesWithUnderscores(subtask) + ".txt"
-		fmt.Println("\n", idx+1, " / ", sizeOfSubTasks, " - ", subtask)
-		promptForSubTasks, err := c.Command.PreparePromptForDoubleAction(cliContext, text.TECH_TASK_PROMPT)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return err
-		}
-		uuidObj, err := uuid.NewUUID()
-		if err != nil {
-			fmt.Println("Error:", err)
-			return err
-		}
-		temporaryResultForSubTask, err := jess_cli.ExecutePrompt(llmClient, promptForSubTasks, uuidObj.String())
-		err = utils.AnswersOutput(fileNameForSubTask, temporaryResultForSubTask)
+		wg.Add(1)
+		go func(idx int, subtask string, llmClient *client.Client, cliContext *cli.Context, c *GenerateDetailedUserJessCommand) {
+			fileNameForSubTask := outputFolder + "/" + fmt.Sprintf("%02d", idx+1) + "_" + utils.ReplaceSpacesWithUnderscores(subtask) + ".txt"
+			fmt.Println("\n", strconv.Itoa(idx+1), " / ", sizeOfSubTasks, " - ", subtask)
+			PROMPT := text.TECH_TASK_PROMPT + "\nTech task: " + subtask
+			promptForSubTasks, _ := c.Command.PreparePromptForDoubleAction(cliContext, PROMPT)
+			uuidObj, _ := uuid.NewUUID()
+			time.Sleep(1 * time.Second)
+			temporaryResultForSubTask, _ := jess_cli.ExecutePrompt(llmClient, promptForSubTasks, uuidObj.String())
+			_ = utils.AnswersOutput(fileNameForSubTask, temporaryResultForSubTask)
+			wg.Done()
+		}(idx, subtask, llmClient, cliContext, c)
 	}
+	wg.Wait()
 	return nil
 }
 
