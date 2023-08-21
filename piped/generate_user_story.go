@@ -35,6 +35,7 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 		err := error(nil)
 		initialUserTopic := cliContext.String("prompt")
 		outputFolder, err := utils.ExpandTilde(cliContext.String("output_folder"))
+		err = utils.CreateFolderIfNotExists(outputFolder)
 		if err != nil {
 			return err
 		}

@@ -10,11 +10,11 @@ const tech_task_preprompt_json = `
   "subTasks": [
     {
       "title": "Task summary",
-      "description": "Provide task summary that's should provide overview of the task, its purpose and context. It should be short and concise, but also provide enough information to understand the task."
+      "description": "Give task summary that's should provide overview of the task, its purpose and context. It should be short and concise, but also provide enough information to understand the task."
     },
     {
       "title": "Importance",
-      "description": "Explain why provided task is important for implementing the feature. It should be short and concise, but also provide enough information to understand importance. Alo provide list of risk that could be happened if not to implement the task."
+      "description": "Give why provided task is important for implementing the feature. It should be short and concise, but also provide enough information to understand importance. Alo provide list of risk that could be happened if not to implement the task."
     },
     {
       "title": "Risks",
@@ -22,7 +22,7 @@ const tech_task_preprompt_json = `
     },
     {
       "title": "Minimal implementation",
-      "description": "Provide minimal implementation of the task. It should be short and concise, but also provide enough information to understand the task."
+      "description": "Give minimal implementation of the task. It should be short and concise, but also provide enough information to understand the task."
     }
   ,
     {
@@ -31,15 +31,15 @@ const tech_task_preprompt_json = `
     },
     {
       "title": "Limitation",
-      "description": "Provide typical limitation of the task, that happened in industry, but it shouldn't limit the minimal implementation. It should be short and concise, but also provide enough information to understand the task. This section also should be include what is out of scope of the task, and why it is here"
+      "description": "Give typical limitation of the task, that happened in industry, but it shouldn't limit the minimal implementation. It should be short and concise, but also provide enough information to understand the task. This section also should be include what is out of scope of the task, and why it is here"
     },
     {
       "title": "Preconditions",
-      "description": "Provide list of mandatory preconditions for current tasks that should be done, before start doing this task. It should be short and concise, but also provide enough information to understand the task."
+      "description": "Give list of mandatory preconditions for current tasks that should be done, before start doing this task. It should be short and concise, but also provide enough information to understand the task."
     },
     {
       "title": "Acceptance Criteria",
-      "description": "Specify conditions that define when the feature is complete and functioning correctly. Use best industries practice to generate acceptance criteria. After acceptance criteria, provide numerated list of sub-tasks that should cover each of that acceptance criteria, that you've just provided."
+      "description": "Give conditions that define when the feature is complete and functioning correctly. Use best industries practice to generate acceptance criteria. After acceptance criteria, provide numerated list of sub-tasks that should cover each of that acceptance criteria, that you've just provided."
     },
     {
       "title": "Testing section",
