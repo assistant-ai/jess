@@ -456,7 +456,11 @@ Parameters:
 
 #### Generating detailed USER STORY - Experimental feature
 
-Main idea is to generate detailed user story based on provided topic. It will also could save generated user story to output file, so you could use (edit) it later. This should give user more option for selecting any details he need for his development process.
+Main idea is to generate detailed user story based on provided topic. It will also could save generated user story to output file, so you could use (edit) it later. This should give user more option for selecting any details he need for his development process. BY default it goes acording next process: 
+
+1. Generate basic user story
+2. Generate basic test cases
+3. Generate subtasks based on generated user story file
 
 Main command:
 ```bash
@@ -467,6 +471,10 @@ Parameters:
 - `-p <promt>` - Mandatory. Short description of topic you want to generate your user story about.
 - `-i <input_file>` - Optional. Additional information about topic could be provided in input file. However, it could be used as main source of information for jess. Be careful with it.
 - `-o <output_folder>` - Mandatory. it should contain real folder. in this folder there would be generated user story, list of technical subtasks, and list of basic test plan.
+- `-sus` or `skip_user_story` - Optional. By default false. If true, user story will not be generated.
+- `-stc` or `skip_test_cases` - Optional. By default false. If true, test cases will not be generated.
+- `-sst` or `skip_sub_tasks` - Optional. By default false. If true, subtasks will not be generated.
+- `-pr` or `parallel` - Optional. By default 5. This oprion is responsible in how many threads jess will run subtasks generation. It could be useful for big projects with a lot of subtasks. However, it could return error due to hume amount of text tokens send to cloud models. So, be careful with it.
 
 
 # DELETING JESS

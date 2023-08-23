@@ -35,6 +35,18 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 		err := error(nil)
 		initialUserTopic := cliContext.String("prompt")
 		outputFolder, err := utils.ExpandTilde(cliContext.String("output_folder"))
+
+		skipUserStory, err := strconv.ParseBool(cliContext.String("skip_user_story"))
+		runUserStory := !skipUserStory
+
+		skipTestcases, err := strconv.ParseBool(cliContext.String("skip_test_cases"))
+		runTestCases := !skipTestcases
+
+		skipSubTasks, err := strconv.ParseBool(cliContext.String("skip_sub_tasks"))
+		runSubTasks := !skipSubTasks
+
+		parallelCalls, err := strconv.Atoi(cliContext.String("parallel"))
+
 		err = utils.CreateFolderIfNotExists(outputFolder)
 		if err != nil {
 			return err
@@ -44,35 +56,52 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 			fmt.Println("Error:", err)
 			return nil
 		}
+
 		filePathForPromptOutput := outputFolder + "/00_user_story.txt"
 
-		// Section for generation of user story
-		utils.PrintlnCyan("USER PROMPT:\n" + initialUserTopic + "\n\n")
-		err = generateUserStory(cliContext, c, llmClient, filePathForPromptOutput)
-		if err != nil {
-			return err
+		//Section for generation of user story
+		if runUserStory {
+			utils.PrintlnCyan("USER PROMPT:\n" + initialUserTopic + "\n\n")
+			err = generateUserStory(cliContext, c, llmClient, filePathForPromptOutput)
+			if err != nil {
+				return err
+			}
+		} else {
+			utils.PrintlnYellow("Skipping user story generation")
 		}
 
-		// Section that responsible for generating sub-tasks files
-		utils.PrintlnCyan("\nCollecting list of sub tasks for generated user story...\n")
-		subtasks, err := getListOfSubTasks(filePathForPromptOutput, llmClient)
-		if err != nil {
-			return err
-		}
+		if runSubTasks || runTestCases {
+			// Section that responsible for generating sub-tasks files
+			utils.PrintlnCyan("\nCollecting list of sub tasks for generated user story...\n")
+			subtasks, err := getListOfSubTasks(filePathForPromptOutput, llmClient)
+			if err != nil {
+				return err
+			}
 
-		sizeOfSubTasks := len(subtasks)
-		//generate list of test cases for provided user story
-		utils.PrintlnCyan("\nGenerating basic TEST CASES for: " + strings.ToUpper(initialUserTopic) + "\n")
-		err = generateTestCases(outputFolder, sizeOfSubTasks, llmClient, cliContext, c)
-		if err != nil {
-			fmt.Println("Error:", err)
-		}
+			if runTestCases {
+				sizeOfSubTasks := len(subtasks)
+				//generate list of test cases for provided user story
+				utils.PrintlnCyan("\nGenerating basic TEST CASES for: " + strings.ToUpper(initialUserTopic) + "\n")
+				err = generateTestCases(outputFolder, sizeOfSubTasks, llmClient, cliContext, c)
+				if err != nil {
+					fmt.Println("Error:", err)
+				}
+			} else {
+				utils.PrintlnYellow("Skipping test cases generation")
+			}
 
-		//Iterate over subtasks and print each one
-		utils.PrintlnCyan("\nGenerating SUB_TASKS for: " + strings.ToUpper(initialUserTopic) + "\n")
-		err = generateTechTasks(subtasks, outputFolder, llmClient, cliContext, c)
-		if err != nil {
-			return err
+			if runSubTasks {
+				//Iterate over subtasks and print each one
+				utils.PrintlnCyan("\nGenerating SUB_TASKS for: " + strings.ToUpper(initialUserTopic) + "\n")
+				err = generateTechTasks(subtasks, outputFolder, llmClient, cliContext, c, parallelCalls)
+				if err != nil {
+					return err
+				}
+			} else {
+				utils.PrintlnYellow("Skipping sub-tasks generation")
+			}
+		} else {
+			utils.PrintlnYellow("Skipping sub-tasks generation and test cases generation")
 		}
 
 		return nil
@@ -80,12 +109,22 @@ func (c *GenerateDetailedUserJessCommand) handleActionForCommit(llmClient *clien
 
 }
 
-func generateTechTasks(subtasks []string, outputFolder string, llmClient *client.Client, cliContext *cli.Context, c *GenerateDetailedUserJessCommand) error {
+func generateTechTasks(subtasks []string, outputFolder string, llmClient *client.Client, cliContext *cli.Context, c *GenerateDetailedUserJessCommand, maxParallel int) error {
 	sizeOfSubTasks := len(subtasks)
 	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, maxParallel)
+
 	for idx, subtask := range subtasks {
 		wg.Add(1)
+		semaphore <- struct{}{}
+
 		go func(idx int, subtask string, llmClient *client.Client, cliContext *cli.Context, c *GenerateDetailedUserJessCommand) {
+
+			defer func() {
+				<-semaphore // Release a semaphore slot
+				wg.Done()
+			}()
+
 			fileNameForSubTask := outputFolder + "/" + fmt.Sprintf("%02d", idx+1) + "_" + utils.ReplaceSpacesWithUnderscores(subtask) + ".txt"
 			fmt.Println("\n", strconv.Itoa(idx+1), " / ", sizeOfSubTasks, " - ", subtask)
 			PROMPT := text.TECH_TASK_PROMPT + "\nTech task: " + subtask
@@ -94,7 +133,6 @@ func generateTechTasks(subtasks []string, outputFolder string, llmClient *client
 			time.Sleep(1 * time.Second)
 			temporaryResultForSubTask, _ := jess_cli.ExecutePrompt(llmClient, promptForSubTasks, uuidObj.String())
 			_ = utils.AnswersOutput(fileNameForSubTask, temporaryResultForSubTask)
-			wg.Done()
 		}(idx, subtask, llmClient, cliContext, c)
 	}
 	wg.Wait()
@@ -190,6 +228,35 @@ func (c *GenerateDetailedUserStoryCommand) Flags() []cli.Flag {
 			Aliases:  []string{"o"},
 			Usage:    "[Mandatory] folder to store generated files",
 			Required: true,
+		},
+
+		&cli.BoolFlag{
+			Name:     "skip_user_story",
+			Aliases:  []string{"sus"},
+			Usage:    "[Optional] Skip user story generation",
+			Required: false,
+			Value:    false,
+		},
+		&cli.BoolFlag{
+			Name:     "skip_test_cases",
+			Aliases:  []string{"stc"},
+			Usage:    "[Optional] Skip test cases generation",
+			Required: false,
+			Value:    false,
+		},
+		&cli.BoolFlag{
+			Name:     "skip_sub_tasks",
+			Aliases:  []string{"sst"},
+			Usage:    "[Optional] Skip subtasks generation",
+			Required: false,
+			Value:    false,
+		},
+		&cli.IntFlag{
+			Name:     "parallel",
+			Aliases:  []string{"pr"},
+			Usage:    "[Optional] Number of allowed parallel requests to LLM model. default is 5",
+			Required: false,
+			Value:    5,
 		},
 	}
 }
