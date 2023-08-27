@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 func ExtractTextFromURL(url string) (string, error) {
@@ -67,7 +68,7 @@ func ExpandTilde(path string) (string, error) {
 	return path, nil
 }
 
-func isFolderPath(path string) (bool, error) {
+func IsFolderPath(path string) (bool, error) {
 	path, err := ExpandTilde(path)
 	if err != nil {
 		return false, err
@@ -75,7 +76,7 @@ func isFolderPath(path string) (bool, error) {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return false, fmt.Errorf("%s does not exist", path)
+			return false, fmt.Errorf("Path does not exist")
 		}
 		return false, err
 	}
@@ -84,7 +85,7 @@ func isFolderPath(path string) (bool, error) {
 }
 
 func IsValidPath(path string) (bool, error) {
-	isFolder, err := isFolderPath(path)
+	isFolder, err := IsFolderPath(path)
 	if err != nil {
 		return false, err
 	}
@@ -92,6 +93,21 @@ func IsValidPath(path string) (bool, error) {
 		return false, fmt.Errorf("%s is not a folder", path)
 	}
 	return true, nil
+}
+
+func CreateFolderIfNotExists(folderPath string) error {
+	// Check if the folder exists
+	folderPath, err := ExpandTilde(folderPath)
+	_, err = os.Stat(folderPath)
+	// If the folder doesn't exist, create it
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(folderPath, 0755) // 0755 is the default permission
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // TODO fix error handling and returnig erorrs
@@ -115,6 +131,14 @@ func IsServiceAccountJsonFileExists(serviceAccountKeyPath string) (bool, error) 
 		log.Fatalf("%s Config file not found at: %s", err, serviceAccountKeyPath)
 	}
 	return exists, nil
+}
+
+func ReplaceSpacesWithUnderscores(input string) string {
+	result_name := strings.ReplaceAll(input, " ", "_")
+	result_name = strings.ReplaceAll(result_name, ".", "")
+	result_name = strings.ReplaceAll(result_name, "-", "_")
+	result_name = strings.ReplaceAll(result_name, "'", "")
+	return result_name
 }
 
 func PrintPrompt(showPrompt bool, basicPrompt string, finalPrompt string) {

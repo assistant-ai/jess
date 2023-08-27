@@ -7,17 +7,17 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type UserStoryCommand struct{}
+type BugHunterCommand struct{}
 
-func (c *UserStoryCommand) Name() string {
-	return "user_story"
+func (c *BugHunterCommand) Name() string {
+	return "bug_hunter"
 }
 
-func (c *UserStoryCommand) Usage() string {
-	return "generate description of user story based on the topic"
+func (c *BugHunterCommand) Usage() string {
+	return "generate of typical bugs and testcases for provided user story / task / topic"
 }
 
-func (c *UserStoryCommand) Flags() []cli.Flag {
+func (c *BugHunterCommand) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:     "prompt",
@@ -33,12 +33,12 @@ func (c *UserStoryCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *UserStoryCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
+func (c *BugHunterCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
-	userPrompt := "user story or topic: " + cliContext.String("prompt")
+	userPrompt := "topic or user story for searching bugs: " + cliContext.String("prompt")
 	urls := cliContext.StringSlice("url")
 	gDriveFiles := cliContext.StringSlice("gdrive")
-	prePrompt := text.USER_STORY_PROMPT
+	prePrompt := text.BUG_HUNTER_PROMPT
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
 		return "", err

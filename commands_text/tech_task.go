@@ -7,17 +7,17 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type UserStoryCommand struct{}
+type TechTaskCommand struct{}
 
-func (c *UserStoryCommand) Name() string {
-	return "user_story"
+func (c *TechTaskCommand) Name() string {
+	return "tech_task"
 }
 
-func (c *UserStoryCommand) Usage() string {
-	return "generate description of user story based on the topic"
+func (c *TechTaskCommand) Usage() string {
+	return "generate of technical task for provided topic"
 }
 
-func (c *UserStoryCommand) Flags() []cli.Flag {
+func (c *TechTaskCommand) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:     "prompt",
@@ -33,12 +33,12 @@ func (c *UserStoryCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *UserStoryCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
+func (c *TechTaskCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
 	filePaths := cliContext.StringSlice("input")
-	userPrompt := "user story or topic: " + cliContext.String("prompt")
+	userPrompt := "topic or user story for generating technical task: " + cliContext.String("prompt")
 	urls := cliContext.StringSlice("url")
 	gDriveFiles := cliContext.StringSlice("gdrive")
-	prePrompt := text.USER_STORY_PROMPT
+	prePrompt := text.TECH_TASK_PROMPT
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
 		return "", err

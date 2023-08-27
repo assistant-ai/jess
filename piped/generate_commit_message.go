@@ -57,11 +57,13 @@ func (c *GenerateCommitJessCommand) handleActionForCommit(llmClient *client.Clie
 			return nil
 		}
 
-		ChangedFilesMapWithComments, err := iterateChangeFilesAndaddComments(changedFiles, llmClient)
+		ChangedFilesMapWithComments, err := iterateChangeFilesAndComments(changedFiles, llmClient)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return nil
 		}
+
+		utils.PrintlnCyan("Generating commit messages...\n")
 
 		resultString := joinCommentsToString(ChangedFilesMapWithComments)
 
@@ -102,11 +104,12 @@ func (c *GenerateCommitCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *GenerateCommitCommand) PreparePromptForDoubleAction(cliContext *cli.Context) (string, error) {
+func (c *GenerateCommitCommand) PreparePromptForDoubleAction(cliContext *cli.Context, storedPrompt string) (string, error) {
 	filePaths := cliContext.StringSlice("input")
 	userPrompt := cliContext.String("prompt")
 	urls := cliContext.StringSlice("url")
 	gDriveFiles := cliContext.StringSlice("gdrive")
+	//TODO extract prompt string to json storage file and reuse basic prompt for all prompts
 	prePrompt := "Generate concise commit descriptions from the given JSON data containing changed file paths and their respective diffs. Each description should be in a Markdown-friendly format suitable for GitHub commits. The JSON contains an array of objects, each having a \"path\" field representing the file path and a \"diff\" field with the file's changes. Provide a formatted list of commit descriptions corresponding to each file path and its changes."
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
@@ -143,18 +146,19 @@ func getChangedFilesWithDiffs(inputFolder string) ([]ChangedFile, error) {
 	}
 	unStagedChangedFiles = parseDiffOutput(unStagedOutput, unStagedChangedFiles)
 
-	for _, uf := range unStagedChangedFiles {
-		for _, sf := range stagedChangedFiles {
-			if sf.Path != uf.Path {
-				unStagedChangedFiles = append(unStagedChangedFiles, sf)
+	if len(unStagedChangedFiles) == 0 {
+		return stagedChangedFiles, nil
+	}
+
+	for idxUf, uf := range unStagedChangedFiles {
+		for idxSf, sf := range stagedChangedFiles {
+			if sf.Path == uf.Path {
+				stagedChangedFiles[idxSf] = unStagedChangedFiles[idxUf]
 			}
 		}
 	}
-	if len(unStagedChangedFiles) == 0 {
-		unStagedChangedFiles = stagedChangedFiles
-	}
 
-	return unStagedChangedFiles, nil
+	return stagedChangedFiles, nil
 }
 
 func parseDiffOutput(output []byte, changedFiles []ChangedFile) []ChangedFile {
@@ -197,14 +201,16 @@ func setChangeFiledInitialComment(filePath string, changedFiles []ChangedFile, i
 	return changedFiles
 }
 
-func iterateChangeFilesAndaddComments(changedFiles []ChangedFile, llmClient *client.Client) ([]ChangedFile, error) {
+func iterateChangeFilesAndComments(changedFiles []ChangedFile, llmClient *client.Client) ([]ChangedFile, error) {
 
-	prePrompt := "forget about all previos request of same requests. analyze it from start. Generate concise commit descriptions from the given JSON data containing changed file paths and their respective diffs. Each description should be in a Markdown-friendly format suitable for GitHub commits. The JSON contains an array of objects, each having a \"path\" field representing the file path and a \"diff\" field with the file's changes. analyze changes, by methods or functions, and provided explanation of method/functions, not a line. If there were one or more comment per file just add that 'there was some comments added'. Provide a formatted list of commit descriptions corresponding to each file path and its changes. your comments should be as short as possible, but cover sense and main idea of changes. "
+	prePrompt := "forget about all previous request of same requests. analyze it from start. Generate concise commit descriptions from the given JSON data containing changed file paths and their respective diffs. Each description should be in a Markdown-friendly format suitable for GitHub commits. The JSON contains an array of objects, each having a \"path\" field representing the file path and a \"diff\" field with the file's changes. analyze changes, by methods or functions, and provided explanation of method/functions, not a line. If there were one or more comment per file just add that 'there were some comments added'. Provide a formatted list of commit descriptions corresponding to each file path and its changes. your comments should be as short as possible, but cover sense and main idea of changes. "
+	numOfChangedFiles := len(changedFiles)
 
 	for i := range changedFiles {
 		if changedFiles[i].jessComment == "" {
 			var err error
-			fmt.Printf("           about commit message for : %s", changedFiles[i].Path)
+			msgForTerminal := fmt.Sprintf("           %d / %d about commit message for : %s", i, numOfChangedFiles, changedFiles[i].Path)
+			fmt.Printf(msgForTerminal)
 			generatedPrompt := prePrompt + "{\npath:" + changedFiles[i].Path + ", \ndiff:" + changedFiles[i].Diff + "}"
 			changedFiles[i].jessComment, err = jess_cli.ExecutePrompt(llmClient, generatedPrompt, "")
 			fmt.Println("")

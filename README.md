@@ -11,7 +11,7 @@ To install, first, clone the repository and navigate to the project directory:
 
 easiest way - just run:
 ```bash
-build_and_nstall.sh
+build_and_install.sh
 ```
 
 it will create binaries with latest (could be not tested) changes and set binaries to right folder.
@@ -92,7 +92,7 @@ jess --help
 ## Configuring
 
 There are few ways to configure Jessica CLI:
-1. manually in config file that is located in `~/.jess/config.yaml`
+1. Manually in config file that is located in `~/.jess/config.yaml`
 
 Example for configuration file:
 
@@ -340,6 +340,36 @@ Parameters:
 - `-o <output_file>` - optional. Output by default to terminal
 - `-c <context_id>` - optional. Context id for storing user story. 
 
+#### Creating tech-task for user stories
+
+Main idea is to create some technical description for the provided task ad prompt input. out put is a bit different from user story. It concentrates on technical details and provide more information about the topic. Additional information about topic could be provided in input file (-i <input_file> - optional). 
+
+Main command:
+```bash
+jess text tech_task -p "As developer I want use logger as singleton"
+```
+
+Parameters:
+- `-p <promt>` - optional. Short description of your user story
+- `-i <input_file>` - optional. Additional information about topic could be provided in input file. However it could be used as main source of information for jess.
+- `-o <output_file>` - optional. Output by default to terminal
+- `-c <context_id>` - optional. Context id for storing user story.
+
+
+#### Creating basic test cases for user stories
+
+Main idea is to generate test cases for the provided task ad prompt input.  Additional information about topic could be provided in input file (-i <input_file> - optional). It will generated list of main bugs and test cases for testing provided tasks.
+
+Main command:
+```bash
+jess text bug_hunter -p "As developer I want use logger as singleton"
+```
+
+Parameters:
+- `-p <promt>` - optional. Short description of your user story
+- `-i <input_file>` - optional. Additional information about topic could be provided in input file. However it could be used as main source of information for jess.
+- `-o <output_file>` - optional. Output by default to terminal
+- `-c <context_id>` - optional. Context id for storing user story.
 
 #### Generating prompts 
 
@@ -424,7 +454,27 @@ Parameters:
 - `-i <inpiut_git_repo>` - mandatory. Path to girt repo.
 - `-o <output_file>` - optional. Output by default to terminal.
 
+#### Generating detailed USER STORY - Experimental feature
 
+Main idea is to generate detailed user story based on provided topic. It will also could save generated user story to output file, so you could use (edit) it later. This should give user more option for selecting any details he need for his development process. BY default it goes acording next process: 
+
+1. Generate basic user story
+2. Generate basic test cases
+3. Generate subtasks based on generated user story file
+
+Main command:
+```bash
+jess pipe big_user_story -p "<basic_user_story>" -o "<output_folder>" -i "<input_file>"
+```
+
+Parameters:
+- `-p <promt>` - Mandatory. Short description of topic you want to generate your user story about.
+- `-i <input_file>` - Optional. Additional information about topic could be provided in input file. However, it could be used as main source of information for jess. Be careful with it.
+- `-o <output_folder>` - Mandatory. it should contain real folder. in this folder there would be generated user story, list of technical subtasks, and list of basic test plan.
+- `-sus` or `skip_user_story` - Optional. By default false. If true, user story will not be generated.
+- `-stc` or `skip_test_cases` - Optional. By default false. If true, test cases will not be generated.
+- `-sst` or `skip_sub_tasks` - Optional. By default false. If true, subtasks will not be generated.
+- `-pr` or `parallel` - Optional. By default 5. This oprion is responsible in how many threads jess will run subtasks generation. It could be useful for big projects with a lot of subtasks. However, it could return error due to hume amount of text tokens send to cloud models. So, be careful with it.
 
 
 # DELETING JESS

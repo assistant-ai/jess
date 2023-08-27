@@ -22,8 +22,11 @@ func DefineTextCommand(llmClient *client.Client) *cli.Command {
 	generatePromptCommand := commands_common.JessCommand{
 		Command: &PromptGeneratorCommand{},
 	}
-	generatePromptCommandjson := commands_common.JessCommand{
-		Command: &PromptGeneratorCommandJson{},
+	bugHunterCommand := commands_common.JessCommand{
+		Command: &BugHunterCommand{},
+	}
+	techTaskCommand := commands_common.JessCommand{
+		Command: &TechTaskCommand{},
 	}
 	tldrCommand := commands_common.JessCommand{
 		Command: &TLDR{},
@@ -37,7 +40,8 @@ func DefineTextCommand(llmClient *client.Client) *cli.Command {
 			solveProblemCommand.DefineCommand(llmClient),
 			userStoryCommand.DefineCommand(llmClient),
 			generatePromptCommand.DefineCommand(llmClient),
-			generatePromptCommandjson.DefineCommand(llmClient),
+			bugHunterCommand.DefineCommand(llmClient),
+			techTaskCommand.DefineCommand(llmClient),
 			tldrCommand.DefineCommand(llmClient),
 		},
 	}
