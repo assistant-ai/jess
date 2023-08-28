@@ -161,7 +161,7 @@ func generateTestCases(outputFolder string, sizeOfSubTasks int, llmClient *clien
 }
 
 func generateUserStory(cliContext *cli.Context, c *GenerateDetailedUserJessCommand, llmClient *client.Client, filePathForPromptOutput string) error {
-	initialPrompt, err := c.Command.PreparePromptForDoubleAction(cliContext, text.USER_STORY_PROMPT)
+	initialPrompt, err := c.Command.PreparePromptForDoubleAction(cliContext, text.UserStoryPrompt)
 	if err != nil {
 		log.Errorf("Error while sending message: %v", err)
 		return err
@@ -267,7 +267,7 @@ func (c *GenerateDetailedUserStoryCommand) PreparePromptForDoubleAction(cliConte
 	urls := cliContext.StringSlice("url")
 	gDriveFiles := cliContext.StringSlice("gdrive")
 	prePrompt := storedPrompt
-	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
+	finalPrompt, err := prompt.FilePromptBuilder(userPrompt, filePaths, urls, gDriveFiles, prePrompt)
 	if err != nil {
 		return "", err
 	}

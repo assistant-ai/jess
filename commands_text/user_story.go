@@ -38,7 +38,7 @@ func (c *UserStoryCommand) PreparePrompt(cliContext *cli.Context) (string, error
 	userPrompt := "user story or topic: " + cliContext.String("prompt")
 	urls := cliContext.StringSlice("url")
 	gDriveFiles := cliContext.StringSlice("gdrive")
-	prePrompt := text.USER_STORY_PROMPT
+	prePrompt := text.UserStoryPrompt
 	finalPrompt, err := prompt.FilePromptBuilder(prePrompt, filePaths, urls, gDriveFiles, userPrompt)
 	if err != nil {
 		return "", err
