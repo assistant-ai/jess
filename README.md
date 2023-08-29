@@ -477,6 +477,25 @@ Parameters:
 - `-pr` or `parallel` - Optional. By default 5. This oprion is responsible in how many threads jess will run subtasks generation. It could be useful for big projects with a lot of subtasks. However, it could return error due to hume amount of text tokens send to cloud models. So, be careful with it.
 
 
+### 7. CV helper
+
+Main idea is to help user to improve is CV and adopt it to position he want to apply. Jess will analyse position, find requirements, identify if this requirements exist in CV and generate list of recommendations for user, what should be in CV to make it more closer to position description.
+
+#### Generating recommendations for CV
+
+Main command:
+```bash
+cv cv_help -i folder/your_cv.txt -o folder/foo -u "https://www.jobboard.com/jobs/senior_ninja_mega_coder"
+```
+parameters:
+- `--input_file value, -i value`                     [Mandatory] Add cv file path for further analysis. Only plain text files is supported.
+
+- `--output_folder value, -o value `                 [Mandatory] Folder to store generated files
+
+- `--url value, -u value [ --url value, -u value ]`  [Mandatory] Url to position description. Url should be open and be visible without
+ant authorization.
+
+
 # DELETING JESS
 
 Deleting binaries
