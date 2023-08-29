@@ -8,10 +8,10 @@ import (
 
 func DefineCVCommand(llmClient *client.Client) *cli.Command {
 	cvRequirements := commands_common.JessCommand{
-		Command: &CV_ReqirementsCommand{},
+		Command: &CvReqirementsCommand{},
 	}
 	cvRecommendations := commands_common.JessActionCommand{
-		Command: &CV_ReccomendationCommand{},
+		Command: &CvRecommendationCommand{},
 	}
 	return &cli.Command{
 		Name:  "cv",

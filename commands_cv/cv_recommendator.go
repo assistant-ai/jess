@@ -35,13 +35,13 @@ func getPromptForGenerateListOfRequirements(positionUrl []string) (string, error
 
 }
 
-func getPromptForGenRecommendations(CvFilePath string, listOfReqs string) (string, error) {
+func getPromptForGenRecommendations(cvFilePath string, listOfReqs string) (string, error) {
 
 	initialString := cv_helper.CV_reccomendationPrompt
 
 	finalPrompt, err := prompttools.CreateInitialPrompt(initialString).
 		AddTextToPrompt("Users CV:").
-		AddFile(CvFilePath).
+		AddFile(cvFilePath).
 		AddTextToPrompt("List of requirements to the position:").
 		AddTextToPrompt(listOfReqs).
 		GenerateFinalPrompt()
@@ -53,17 +53,17 @@ func getPromptForGenRecommendations(CvFilePath string, listOfReqs string) (strin
 
 }
 
-type CV_ReccomendationCommand struct{}
+type CvRecommendationCommand struct{}
 
-func (c *CV_ReccomendationCommand) Name() string {
+func (c *CvRecommendationCommand) Name() string {
 	return "cv_help"
 }
 
-func (c *CV_ReccomendationCommand) Usage() string {
-	return "Get cv requirements from provided URL and generate recommendations for user how to improve his cv. Main ide that CV should be in txt format. at first it would generate file with requirements and also generate fole with recommendation how to improve CV."
+func (c *CvRecommendationCommand) Usage() string {
+	return "Get cv requirements from provided URL and generate recommendations for user how to improve his cv. Main ide that CV should be in txt format. at first it would generate file with requirements and also generate file with recommendation how to improve CV."
 }
 
-func (c *CV_ReccomendationCommand) Flags() []cli.Flag {
+func (c *CvRecommendationCommand) Flags() []cli.Flag {
 	return []cli.Flag{
 		&cli.StringFlag{
 			Name:     "input_file",
@@ -87,7 +87,7 @@ func (c *CV_ReccomendationCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *CV_ReccomendationCommand) ExecAction(llmClient *client.Client, cliContext *cli.Context) cli.ActionFunc {
+func (c *CvRecommendationCommand) ExecAction(llmClient *client.Client, cliContext *cli.Context) cli.ActionFunc {
 	//initialize section
 	cvFile, err := utils.ExpandTilde(cliContext.String("input_file"))
 	if err != nil {
