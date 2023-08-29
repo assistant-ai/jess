@@ -8,17 +8,17 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type CvReqirementsCommand struct{}
+type CvRequirementsCommand struct{}
 
-func (c *CvReqirementsCommand) Name() string {
+func (c *CvRequirementsCommand) Name() string {
 	return "reqs"
 }
 
-func (c *CvReqirementsCommand) Usage() string {
+func (c *CvRequirementsCommand) Usage() string {
 	return "Get cv requirements for user from provided URL or file"
 }
 
-func (c *CvReqirementsCommand) Flags() []cli.Flag {
+func (c *CvRequirementsCommand) Flags() []cli.Flag {
 	return []cli.Flag{
 		commands_common.InputFilesFlag(),
 		commands_common.ContextFlag(),
@@ -28,7 +28,7 @@ func (c *CvReqirementsCommand) Flags() []cli.Flag {
 	}
 }
 
-func (c *CvReqirementsCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
+func (c *CvRequirementsCommand) PreparePrompt(cliContext *cli.Context) (string, error) {
 	urls := cliContext.StringSlice("url")
 	initialString := cv_helper.CV_ReqirementsCollectorPrompt
 
