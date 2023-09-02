@@ -9,6 +9,7 @@ import (
 	"github.com/assistant-ai/jess/commands_common"
 	"github.com/assistant-ai/jess/commands_config"
 	"github.com/assistant-ai/jess/commands_context"
+	"github.com/assistant-ai/jess/commands_cv"
 	"github.com/assistant-ai/jess/commands_text"
 	"github.com/assistant-ai/jess/piped"
 	"github.com/assistant-ai/jess/utils"
@@ -75,6 +76,7 @@ func defineCommands(config *utils.AppConfig, logger *logrus.Logger) ([]*cli.Comm
 		commands_context.DefineServeCommand(llmClient),
 		auto.DefineAutoCommand(llmClient, logger),
 		piped.DefinePipedCommand(llmClient),
+		commands_cv.DefineCVCommand(llmClient),
 	}
 
 	return commands, nil
