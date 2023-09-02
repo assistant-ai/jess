@@ -6,6 +6,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/agnivade/levenshtein v1.1.1
 	github.com/assistant-ai/llmchat-client v1.0.11
+	github.com/assistant-ai/prompt-tools v0.0.0
 	github.com/b0noi/go-utils/v2 v2.2.1
 	github.com/go-shiori/go-readability v0.0.0-20230421032831-c66949dfc0ad
 	github.com/google/uuid v1.3.0
