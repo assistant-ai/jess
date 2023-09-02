@@ -151,7 +151,7 @@ func StartProcess(userAsk string, rootPath string, contextId string, llmClient *
 }
 
 func joinMemoryOldAndNew(oldMemory string, newMemory string, llmClient *client.Client) (string, error) {
-	answer, err := llmClient.SenRandomContextMessage("There are old memory and new memory, you have to join them in the way that will capture all the same information with all the details but result message in size should not be more than 500 words. Old memory: " + oldMemory + "\n\n new memory: " + newMemory)
+	answer, err := llmClient.SendRandomContextMessage("There are old memory and new memory, you have to join them in the way that will capture all the same information with all the details but result message in size should not be more than 500 words. Old memory: " + oldMemory + "\n\n new memory: " + newMemory)
 	if err != nil {
 		return "", err
 	}
@@ -159,7 +159,7 @@ func joinMemoryOldAndNew(oldMemory string, newMemory string, llmClient *client.C
 }
 
 func tryToExtractJsonMessage(message string, cmd *Command, llmClient *client.Client) error {
-	answer, err := llmClient.SenRandomContextMessage("Extract JSON from the following message: " + message)
+	answer, err := llmClient.SendRandomContextMessage("Extract JSON from the following message: " + message)
 	if err != nil {
 		return err
 	}
