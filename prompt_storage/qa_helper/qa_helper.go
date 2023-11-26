@@ -195,5 +195,70 @@ Develop the test cases in accordance with best practices in software testing, en
 Only create test cases based on the predefined checklist items. Do not add new test cases that are not part of the checklist.
 Your goal is to provide well-structured, detailed test cases that are organized in the same way as the checklist. This approach will facilitate a more efficient testing process, ensuring each group of test cases aligns with the specific categories or functionalities outlined in the checklist.
 You should create test case for each element of the list. 
+`
 
+const QA_convertCheckListToJson = `
+Your task is to convert a raw text checklist of test cases, along with any additional related information provided, into a well-structured JSON object. Focus on accurately extracting the titles of each test case and any relevant details from the text, then organizing them into the defined JSON structure. Ensure that all relevant additional information is included in a 'details' section for each test case in the JSON. Double-check the structure for accuracy and adherence to the defined format.
+
+Text Analysis for Titles and Details:
+
+Read through the raw text checklist, identifying the titles of each test case.
+Extract any additional information that is related to each test case. This might include descriptions, expected outcomes, prerequisites, etc.
+JSON Structure Definition:
+
+Define the JSON structure as follows:
+Each test case should be represented as an object.
+The structure for each test case object should include:
+title: A string containing the title of the test case.
+details: An object containing any additional related information
+Other relevant fields as identified from the text.
+Create and Populate the JSON Object:
+
+Construct the JSON object based on the defined structure.
+Populate the title and details for each test case with the extracted information from the text.
+use this json as mandatory example of your structure:
+{"testCases": [{"title": "TITLE 1","details": "SOME details OF TEST CASE"}]} 
+
+Ensure Accuracy and Readability:
+
+Make sure that the JSON object is accurate, readable, and adheres strictly to the defined structure.
+Format the JSON for clarity, ensuring that each test case object is easily distinguishable and accessible.
+Double Check for Structure Adherence:
+
+Carefully review the JSON object to confirm that it follows the defined structure and includes all relevant information extracted from the text.
+Validate the JSON format to ensure it is free of syntax errors.
+Final JSON Output:
+
+Prepare the final JSON object for output. The result should be a JSON representation of the test case titles and their related details, structured as defined and ready for use in further programming or testing tasks.
+Your goal is to provide a JSON-formatted output that accurately reflects the test cases and their details from the provided raw text checklist. The JSON object should be complete, well-structured, and suitable for immediate use in subsequent tasks.
+`
+
+const QA_convertTitleToTestCase = `
+Your task is to develop a detailed test case based on a title provided by the user, along with any additional details they will supply at the end of this prompt. Use these inputs to create a comprehensive test case that aligns with the best practices in software testing.
+
+Interpret the Test Case Title:
+
+Begin by carefully analyzing the title of the test case provided by the user. Understand the key elements and scope suggested by the title.
+Incorporate Additional User-Provided Details:
+
+After receiving the additional details from the user, integrate this information into the test case. These details might include specific conditions, expected behaviors, or particular scenarios relevant to the test.
+Develop the Test Case:
+
+Create a detailed test case that includes the following elements:
+Test Case ID: Assign a unique identifier to the test case.
+Title: Use the title provided by the user.
+Objective: Clearly state what the test aims to achieve or verify.
+Preconditions: List any conditions or setups required before executing the test.
+Test Steps: Provide detailed, step-by-step instructions for executing the test. Ensure these steps are clear and precise.
+Expected Results: Describe the expected outcome or response from the system when the test is executed.
+Actual Results: Leave a space for documenting the actual results during test execution.
+Post-Test Actions: Outline any necessary actions or checks after the test execution.
+Status: Include a field to indicate the test result (Pass/Fail) after execution.
+Adherence to Testing Best Practices:
+
+Ensure that the test case is comprehensive and covers all aspects suggested by the title and additional details.
+Align the test case development with best practices in software testing, focusing on clarity, completeness, and relevance.
+User Input:
+
+Now, please provide the title of the test case and any additional details you have. Based on this information, a detailed test case will be created following the best practices in software testing.
 `

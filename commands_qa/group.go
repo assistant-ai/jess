@@ -28,6 +28,9 @@ func DefineCVCommand(llmClient *client.Client) *cli.Command {
 	qaListToCases := commands_common.JessCommand{
 		Command: &QaListToCasesCommand{},
 	}
+	qaDetailedTestCases := commands_common.JessActionCommand{
+		Command: &QADetailedTestVasesCommand{},
+	}
 
 	return &cli.Command{
 		Name:  "qa",
@@ -40,6 +43,7 @@ func DefineCVCommand(llmClient *client.Client) *cli.Command {
 			qaSwaggerPython.DefineCommand(llmClient),
 			qaSwaggerCurl.DefineCommand(llmClient),
 			qaListToCases.DefineCommand(llmClient),
+			qaDetailedTestCases.DefineCommand(llmClient),
 		},
 	}
 }
