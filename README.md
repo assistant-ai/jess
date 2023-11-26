@@ -447,7 +447,7 @@ Main Idea that user will provide folder to Jess. And jess based on results of `g
 user could see this messages in terminal or save it to file.
 
 ```bash
-jess pipe gmc -i <path_to_folder>
+jess pipe gcm -i <path_to_folder>
 ```
 
 Parameters:
